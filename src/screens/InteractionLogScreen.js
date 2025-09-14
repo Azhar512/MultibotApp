@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import {
   View,
@@ -13,8 +12,8 @@ import {
   Alert,
   Dimensions,
   RefreshControl,
+  StatusBar,
 } from "react-native"
-import LinearGradient from "react-native-linear-gradient"
 import { Picker } from "@react-native-picker/picker"
 import {
   Search,
@@ -35,6 +34,7 @@ import { THEME } from "../styles/globalStyles"
 import Card from "../components/Card"
 import DatePicker from "../components/DatePicker"
 import Sidebar from "../components/Sidebar"
+import GradientView from "../components/GradientView"
 
 const { width, height } = Dimensions.get("window")
 
@@ -210,25 +210,23 @@ const InteractionLogScreen = ({ navigation }) => {
   const renderHeader = () => (
     <View style={styles.header}>
       <TouchableOpacity style={styles.menuButton} onPress={() => setSidebarOpen(true)}>
-        <Menu size={24} color={THEME.text} />
+        <Menu size={24} color="rgba(255,255,255,0.8)" />
       </TouchableOpacity>
-
       <View style={styles.headerContent}>
         <Text style={styles.headerTitle}>Interaction Log</Text>
       </View>
-
       <View style={styles.headerActions}>
         <View style={[styles.connectionStatus, isConnected ? styles.connected : styles.disconnected]}>
           <RefreshCw size={12} color={THEME.text} style={isConnected ? styles.spinning : null} />
           <Text style={styles.connectionText}>{isConnected ? "Live" : "Reconnecting..."}</Text>
         </View>
         <TouchableOpacity style={styles.notificationButton}>
-          <Bell size={20} color={THEME.text} />
+          <Bell size={20} color="rgba(255,255,255,0.8)" />
         </TouchableOpacity>
         <View style={styles.userProfile}>
-          <LinearGradient colors={["#f97316", "#ec4899"]} style={styles.avatar} />
-          <Text style={styles.userName}>Azhar</Text>
-          <ChevronRight size={16} color={THEME.text} />
+          <View style={styles.avatar}>
+          </View>
+          <ChevronRight size={16} color="rgba(255,255,255,0.8)" />
         </View>
       </View>
     </View>
@@ -260,16 +258,15 @@ const InteractionLogScreen = ({ navigation }) => {
       <View style={styles.filtersContainer}>
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <Search size={16} color={THEME.textLight} style={styles.searchIcon} />
+          <Search size={16} color="rgba(255,255,255,0.6)" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             value={searchQuery}
             onChangeText={handleSearch}
             placeholder="Search interactions..."
-            placeholderTextColor={THEME.textLight}
+            placeholderTextColor="rgba(255,255,255,0.6)"
           />
         </View>
-
         {/* Date Filters */}
         <View style={styles.dateFilters}>
           <DatePicker
@@ -280,7 +277,6 @@ const InteractionLogScreen = ({ navigation }) => {
           />
           <DatePicker value={endDate} onValueChange={setEndDate} placeholder="End Date" style={styles.datePicker} />
         </View>
-
         {/* Dropdown Filters */}
         <View style={styles.dropdownFilters}>
           <View style={styles.pickerContainer}>
@@ -308,7 +304,6 @@ const InteractionLogScreen = ({ navigation }) => {
             </Picker>
           </View>
         </View>
-
         {/* Reset Button */}
         <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
           <RefreshCw size={16} color={THEME.text} />
@@ -350,21 +345,18 @@ const InteractionLogScreen = ({ navigation }) => {
             <Text style={[styles.sentimentText, { color: sentimentStyle.text }]}>{item.sentiment}</Text>
           </View>
         </View>
-
         <View style={styles.messageContainer}>
           <Text style={styles.messageLabel}>User:</Text>
           <Text style={styles.messageText} numberOfLines={2}>
             {item.userMessage}
           </Text>
         </View>
-
         <View style={styles.messageContainer}>
           <Text style={styles.messageLabel}>Bot:</Text>
           <Text style={styles.messageText} numberOfLines={2}>
             {item.botResponse}
           </Text>
         </View>
-
         <View style={styles.interactionFooter}>
           <Text style={styles.responseTime}>Response: {item.responseTime}ms</Text>
           <Text style={styles.confidence}>Confidence: {Math.round(item.confidence * 100)}%</Text>
@@ -384,7 +376,7 @@ const InteractionLogScreen = ({ navigation }) => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={THEME.text} />}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Archive size={48} color={THEME.textLight} />
+            <Archive size={48} color="rgba(255,255,255,0.6)" />
             <Text style={styles.emptyText}>No interactions found</Text>
             <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
           </View>
@@ -395,83 +387,82 @@ const InteractionLogScreen = ({ navigation }) => {
 
   const renderDetailsModal = () => (
     <Modal visible={detailsModalVisible} animationType="slide" presentationStyle="pageSheet">
-      <LinearGradient colors={THEME.background} style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>Interaction Details</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={() => setDetailsModalVisible(false)}>
-            <X size={24} color={THEME.text} />
-          </TouchableOpacity>
-        </View>
-
-        {selectedInteraction && (
-          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-            {/* User Message */}
-            <View style={styles.messageDetailContainer}>
-              <View style={styles.messageDetailHeader}>
-                <User size={20} color={THEME.text} />
-                <Text style={styles.messageDetailSender}>{selectedInteraction.userName}</Text>
-                <Text style={styles.messageDetailTime}>{new Date(selectedInteraction.timestamp).toLocaleString()}</Text>
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#FF8A9B" />
+        <GradientView colors={["#FF8A9B", "#FF9A9A"]} style={styles.backgroundGradient}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Interaction Details</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={() => setDetailsModalVisible(false)}>
+              <X size={24} color={THEME.text} />
+            </TouchableOpacity>
+          </View>
+          {selectedInteraction && (
+            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+              {/* User Message */}
+              <View style={styles.messageDetailContainer}>
+                <View style={styles.messageDetailHeader}>
+                  <User size={20} color={THEME.text} />
+                  <Text style={styles.messageDetailSender}>{selectedInteraction.userName}</Text>
+                  <Text style={styles.messageDetailTime}>{new Date(selectedInteraction.timestamp).toLocaleString()}</Text>
+                </View>
+                <View style={styles.messageDetailBubble}>
+                  <Text style={styles.messageDetailText}>{selectedInteraction.userMessage}</Text>
+                </View>
               </View>
-              <View style={styles.messageDetailBubble}>
-                <Text style={styles.messageDetailText}>{selectedInteraction.userMessage}</Text>
+              {/* Bot Response */}
+              <View style={styles.messageDetailContainer}>
+                <View style={styles.messageDetailHeader}>
+                  <Bot size={20} color={THEME.text} />
+                  <Text style={styles.messageDetailSender}>AI Bot</Text>
+                  <Text style={styles.messageDetailTime}>Response Time: {selectedInteraction.responseTime}ms</Text>
+                </View>
+                <View style={[styles.messageDetailBubble, styles.botBubble]}>
+                  <Text style={styles.messageDetailText}>{selectedInteraction.botResponse}</Text>
+                </View>
               </View>
-            </View>
-
-            {/* Bot Response */}
-            <View style={styles.messageDetailContainer}>
-              <View style={styles.messageDetailHeader}>
-                <Bot size={20} color={THEME.text} />
-                <Text style={styles.messageDetailSender}>AI Bot</Text>
-                <Text style={styles.messageDetailTime}>Response Time: {selectedInteraction.responseTime}ms</Text>
+              {/* Metadata */}
+              <View style={styles.metadataContainer}>
+                <View style={styles.metadataItem}>
+                  <Text style={styles.metadataLabel}>Sentiment:</Text>
+                  <Text style={[styles.metadataValue, { color: THEME.success }]}>{selectedInteraction.sentiment}</Text>
+                </View>
+                <View style={styles.metadataItem}>
+                  <Text style={styles.metadataLabel}>Confidence:</Text>
+                  <Text style={styles.metadataValue}>{Math.round(selectedInteraction.confidence * 100)}%</Text>
+                </View>
+                <View style={styles.metadataItem}>
+                  <Text style={styles.metadataLabel}>User ID:</Text>
+                  <Text style={styles.metadataValue}>{selectedInteraction.userId}</Text>
+                </View>
               </View>
-              <View style={[styles.messageDetailBubble, styles.botBubble]}>
-                <Text style={styles.messageDetailText}>{selectedInteraction.botResponse}</Text>
+              {/* Action Buttons */}
+              <View style={styles.actionButtons}>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.flagButton]}
+                  onPress={() => handleStatusUpdate(selectedInteraction.id, "flagged")}
+                >
+                  <Flag size={16} color={THEME.text} />
+                  <Text style={styles.actionButtonText}>Flag</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.archiveButton]}
+                  onPress={() => handleStatusUpdate(selectedInteraction.id, "archived")}
+                >
+                  <Archive size={16} color={THEME.text} />
+                  <Text style={styles.actionButtonText}>Archive</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.deleteButton]}
+                  onPress={() => handleStatusUpdate(selectedInteraction.id, "deleted")}
+                >
+                  <Trash2 size={16} color={THEME.text} />
+                  <Text style={styles.actionButtonText}>Delete</Text>
+                </TouchableOpacity>
               </View>
-            </View>
-
-            {/* Metadata */}
-            <View style={styles.metadataContainer}>
-              <View style={styles.metadataItem}>
-                <Text style={styles.metadataLabel}>Sentiment:</Text>
-                <Text style={[styles.metadataValue, { color: THEME.success }]}>{selectedInteraction.sentiment}</Text>
-              </View>
-              <View style={styles.metadataItem}>
-                <Text style={styles.metadataLabel}>Confidence:</Text>
-                <Text style={styles.metadataValue}>{Math.round(selectedInteraction.confidence * 100)}%</Text>
-              </View>
-              <View style={styles.metadataItem}>
-                <Text style={styles.metadataLabel}>User ID:</Text>
-                <Text style={styles.metadataValue}>{selectedInteraction.userId}</Text>
-              </View>
-            </View>
-
-            {/* Action Buttons */}
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.flagButton]}
-                onPress={() => handleStatusUpdate(selectedInteraction.id, "flagged")}
-              >
-                <Flag size={16} color={THEME.text} />
-                <Text style={styles.actionButtonText}>Flag</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.archiveButton]}
-                onPress={() => handleStatusUpdate(selectedInteraction.id, "archived")}
-              >
-                <Archive size={16} color={THEME.text} />
-                <Text style={styles.actionButtonText}>Archive</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.deleteButton]}
-                onPress={() => handleStatusUpdate(selectedInteraction.id, "deleted")}
-              >
-                <Trash2 size={16} color={THEME.text} />
-                <Text style={styles.actionButtonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        )}
-      </LinearGradient>
+            </ScrollView>
+          )}
+        </GradientView>
+      </View>
     </Modal>
   )
 
@@ -489,7 +480,6 @@ const InteractionLogScreen = ({ navigation }) => {
             <Text style={styles.exportButtonText}>Print</Text>
           </TouchableOpacity>
         </View>
-
         {/* Pagination */}
         <View style={styles.paginationContainer}>
           <View style={styles.itemsPerPageContainer}>
@@ -507,7 +497,6 @@ const InteractionLogScreen = ({ navigation }) => {
               </Picker>
             </View>
           </View>
-
           <View style={styles.paginationControls}>
             <TouchableOpacity
               style={[styles.paginationButton, currentPage === 1 && styles.disabledButton]}
@@ -534,30 +523,34 @@ const InteractionLogScreen = ({ navigation }) => {
   )
 
   return (
-    <LinearGradient colors={THEME.background} style={styles.container}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {renderHeader()}
-        {renderMetrics()}
-        {renderFilters()}
-        {renderInteractionsList()}
-        {renderFooter()}
-      </ScrollView>
-
-      {renderDetailsModal()}
-
-      <Sidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        navItems={navItems}
-        navigation={navigation}
-        currentScreen="InteractionLog"
-      />
-    </LinearGradient>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#FF8A9B" />
+      <GradientView colors={["#FF8A9B", "#FF9A9A"]} style={styles.backgroundGradient}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {renderHeader()}
+          {renderMetrics()}
+          {renderFilters()}
+          {renderInteractionsList()}
+          {renderFooter()}
+        </ScrollView>
+        {renderDetailsModal()}
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          navItems={navItems}
+          navigation={navigation}
+          currentScreen="InteractionLog"
+        />
+      </GradientView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  backgroundGradient: {
     flex: 1,
   },
   content: {
@@ -629,7 +622,15 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
+    backgroundColor: "#FF9A56",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 8,
+  },
+  userInitial: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
   },
   userName: {
     color: THEME.text,
@@ -648,7 +649,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   metricLabel: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 12,
     fontWeight: "500",
     marginBottom: 4,
@@ -756,16 +757,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 12,
   },
-  userInitial: {
-    color: THEME.text,
-    fontSize: 14,
-    fontWeight: "bold",
-  },
   userDetails: {
     flex: 1,
   },
   timestamp: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 12,
   },
   sentimentBadge: {
@@ -783,7 +779,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   messageLabel: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 12,
     fontWeight: "600",
     marginBottom: 4,
@@ -799,11 +795,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   responseTime: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 10,
   },
   confidence: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 10,
   },
   emptyState: {
@@ -811,17 +807,14 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   emptyText: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 16,
     marginTop: 12,
     marginBottom: 4,
   },
   emptySubtext: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.6)",
     fontSize: 12,
-  },
-  modalContainer: {
-    flex: 1,
   },
   modalHeader: {
     flexDirection: "row",
@@ -864,7 +857,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   messageDetailTime: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 10,
   },
   messageDetailBubble: {
@@ -894,7 +887,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   metadataLabel: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 14,
   },
   metadataValue: {

@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Dimensions } from "react-native"
-import LinearGradient from "react-native-linear-gradient"
 import { X } from "lucide-react-native"
 import { THEME } from "../styles/globalStyles"
+import GradientView from "./GradientView"
 
 const { width, height } = Dimensions.get("window")
 
@@ -14,30 +14,43 @@ const Sidebar = ({ isOpen, onClose, navItems, navigation, currentScreen }) => {
   return (
     <Modal visible={isOpen} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <LinearGradient colors={["rgba(255, 255, 255, 0.1)", "rgba(255, 255, 255, 0.05)"]} style={styles.sidebar}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>AI Bot Platform</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <X size={24} color={THEME.text} />
-            </TouchableOpacity>
-          </View>
+        <View style={styles.sidebar}>
+          {/* Pink/Coral gradient background matching your theme */}
+          <GradientView colors={["#FF8A9B", "#FF9A9A"]} style={styles.sidebarGradient}>
+            <View style={styles.sidebarContent}>
+              <View style={styles.header}>
+                <Text style={styles.headerTitle}>AI Bot Platform</Text>
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <X size={24} color={THEME.text} />
+                </TouchableOpacity>
+              </View>
 
-          <View style={styles.nav}>
-            {navItems.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[styles.navItem, currentScreen === item.screen && styles.activeNavItem]}
-                onPress={() => handleNavigation(item.screen)}
-              >
-                <item.icon size={20} color={currentScreen === item.screen ? THEME.primary : THEME.text} />
-                <Text style={[styles.navText, currentScreen === item.screen && styles.activeNavText]}>
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </LinearGradient>
+              <View style={styles.nav}>
+                {navItems.map((item, index) => {
+                  const isActive = currentScreen === item.screen
+                  return (
+                    <TouchableOpacity key={index} style={styles.navItem} onPress={() => handleNavigation(item.screen)}>
+                      <View style={[styles.navItemContent, isActive && styles.activeNavItem]}>
+                        {isActive && <View style={styles.activeGradient} />}
+                        <View style={styles.navItemInner}>
+                          <item.icon size={20} color={isActive ? "#FF8A9B" : THEME.text} />
+                          <Text style={[styles.navText, isActive && styles.activeNavText]}>{item.label}</Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  )
+                })}
+              </View>
 
+              {/* Status indicator */}
+              <View style={styles.statusContainer}>
+                <View style={styles.statusBadge}>
+                  <View style={styles.statusGradient} />
+                </View>
+              </View>
+            </View>
+          </GradientView>
+        </View>
         <TouchableOpacity style={styles.backdrop} onPress={onClose} />
       </View>
     </Modal>
@@ -52,9 +65,15 @@ const styles = StyleSheet.create({
   sidebar: {
     width: width * 0.8,
     height: height,
+    overflow: "hidden",
+  },
+  sidebarGradient: {
+    flex: 1,
+  },
+  sidebarContent: {
+    flex: 1,
     paddingTop: 50,
-    borderRightWidth: 1,
-    borderRightColor: "rgba(255, 255, 255, 0.2)",
+    zIndex: 1,
   },
   backdrop: {
     flex: 1,
@@ -81,17 +100,32 @@ const styles = StyleSheet.create({
   },
   nav: {
     padding: 20,
+    flex: 1,
   },
   navItem: {
+    marginBottom: 8,
+  },
+  navItemContent: {
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  activeNavItem: {
+    // Handled by activeGradient
+  },
+  activeGradient: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+  },
+  navItemInner: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 15,
     paddingHorizontal: 15,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  activeNavItem: {
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    zIndex: 1,
   },
   navText: {
     marginLeft: 12,
@@ -100,7 +134,35 @@ const styles = StyleSheet.create({
     color: THEME.text,
   },
   activeNavText: {
-    color: THEME.primary,
+    color: "#FF8A9B", // Pink color for active text
+    fontWeight: "600",
+  },
+  statusContainer: {
+    padding: 20,
+    paddingTop: 0,
+  },
+  statusBadge: {
+    borderRadius: 8,
+    overflow: "hidden",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  statusGradient: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(16, 185, 129, 0.2)",
+  },
+  statusText: {
+    color: THEME.text,
+    fontSize: 12,
+    fontWeight: "500",
+    padding: 10,
+    zIndex: 1,
   },
 })
 

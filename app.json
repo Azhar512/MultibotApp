@@ -1,4 +1,12 @@
 {
-  "name": "TempAppWorking",
-  "displayName": "TempAppWorking"
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "7b187c82-c61e-4b4a-bb70-9a6a1c761917"
+      }
+    },
+    "android": {
+      "package": "com.azhar512.tempappworking"
+    }
+  }
 }

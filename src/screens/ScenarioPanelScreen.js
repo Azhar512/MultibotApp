@@ -1,8 +1,5 @@
-"use client"
-
 import { useState } from "react"
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Dimensions, FlatList } from "react-native"
-import LinearGradient from "react-native-linear-gradient"
 import {
   ChevronRight,
   Github,
@@ -23,6 +20,7 @@ import {
 import { THEME } from "../styles/globalStyles"
 import Card from "../components/Card"
 import Sidebar from "../components/Sidebar"
+import GradientView from "../components/GradientView"
 
 const { width } = Dimensions.get("window")
 
@@ -170,28 +168,28 @@ const ScenarioPanelScreen = ({ navigation }) => {
       revenue: "+15%",
       costs: "+8%",
       profit: "+25%",
-      color: THEME.success,
+      color: "#10b981",
     },
     {
       scenario: "Baseline",
       revenue: "+5%",
       costs: "+3%",
       profit: "+8%",
-      color: THEME.primary,
+      color: "#3b82f6",
     },
     {
       scenario: "Pessimistic",
       revenue: "-8%",
       costs: "+2%",
       profit: "-18%",
-      color: THEME.error,
+      color: "#ef4444",
     },
     {
       scenario: "Disruption",
       revenue: "±20%",
       costs: "±15%",
       profit: "±35%",
-      color: THEME.accent2,
+      color: "#8b5cf6",
     },
   ]
 
@@ -221,39 +219,35 @@ const ScenarioPanelScreen = ({ navigation }) => {
   const getTrendColor = (trend) => {
     switch (trend) {
       case "up":
-        return THEME.success
+        return "#10b981"
       case "down":
-        return THEME.error
+        return "#ef4444"
       default:
-        return THEME.textLight
+        return "#9ca3af"
     }
   }
 
   const renderHeader = () => (
     <View style={styles.header}>
       <TouchableOpacity style={styles.menuButton} onPress={() => setSidebarOpen(true)}>
-        <Menu size={24} color={THEME.text} />
+        <Menu size={24} color="#ffffff" />
       </TouchableOpacity>
-
       <View style={styles.searchContainer}>
-        <Search size={16} color={THEME.textLight} style={styles.searchIcon} />
+        <Search size={16} color="#9ca3af" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           value={searchText}
           onChangeText={setSearchText}
           placeholder="Search scenarios..."
-          placeholderTextColor={THEME.textLight}
+          placeholderTextColor="#9ca3af"
         />
       </View>
-
       <View style={styles.headerActions}>
         <TouchableOpacity style={styles.notificationButton}>
-          <Bell size={20} color={THEME.text} />
+          <Bell size={20} color="#ffffff" />
         </TouchableOpacity>
         <View style={styles.userProfile}>
-          <LinearGradient colors={["#f97316", "#ec4899"]} style={styles.avatar} />
-          <Text style={styles.userName}>Azhar</Text>
-          <ChevronRight size={16} color={THEME.text} />
+          <ChevronRight size={16} color="#ffffff" />
         </View>
       </View>
     </View>
@@ -289,7 +283,7 @@ const ScenarioPanelScreen = ({ navigation }) => {
     <View style={styles.driverCard}>
       <View style={styles.driverHeader}>
         <View style={styles.driverIconContainer}>
-          <item.icon size={24} color={THEME.text} />
+          <item.icon size={24} color="#ffffff" />
         </View>
         <View style={styles.driverTrend}>
           <Text style={[styles.trendIcon, { color: getTrendColor(item.trend) }]}>{getTrendIcon(item.trend)}</Text>
@@ -303,10 +297,10 @@ const ScenarioPanelScreen = ({ navigation }) => {
 
   const renderScenarioItem = ({ item }) => (
     <TouchableOpacity style={styles.scenarioCard}>
-      <LinearGradient colors={item.color} style={styles.scenarioGradient}>
+      <GradientView colors={item.color} style={styles.scenarioGradient}>
         <View style={styles.scenarioHeader}>
           <View style={styles.scenarioIconContainer}>
-            <item.icon size={28} color={THEME.text} />
+            <item.icon size={28} color="#ffffff" />
           </View>
           <View style={styles.scenarioMetrics}>
             <Text style={styles.scenarioImpact}>{item.impact}</Text>
@@ -316,7 +310,7 @@ const ScenarioPanelScreen = ({ navigation }) => {
         <Text style={styles.scenarioName}>{item.name}</Text>
         <Text style={styles.scenarioDescription}>{item.description}</Text>
         <Text style={styles.scenarioDetails}>{item.details}</Text>
-      </LinearGradient>
+      </GradientView>
     </TouchableOpacity>
   )
 
@@ -414,10 +408,10 @@ const ScenarioPanelScreen = ({ navigation }) => {
         <View style={styles.comparisonGrid}>
           {scenarios.map((scenario) => (
             <View key={scenario.id} style={styles.comparisonCard}>
-              <LinearGradient colors={scenario.color} style={styles.comparisonHeader}>
-                <scenario.icon size={20} color={THEME.text} />
+              <GradientView colors={scenario.color} style={styles.comparisonHeader}>
+                <scenario.icon size={20} color="#ffffff" />
                 <Text style={styles.comparisonName}>{scenario.name}</Text>
-              </LinearGradient>
+              </GradientView>
               <View style={styles.comparisonMetrics}>
                 <Text style={styles.comparisonImpact}>Impact: {scenario.impact}</Text>
                 <Text style={styles.comparisonProbability}>Probability: {scenario.probability}</Text>
@@ -476,20 +470,19 @@ const ScenarioPanelScreen = ({ navigation }) => {
           </Text>
           <View style={styles.socialLinks}>
             <TouchableOpacity style={styles.socialLink}>
-              <Github size={20} color={THEME.textLight} />
+              <Github size={20} color="#9ca3af" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialLink}>
-              <Twitter size={20} color={THEME.textLight} />
+              <Twitter size={20} color="#9ca3af" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialLink}>
-              <Linkedin size={20} color={THEME.textLight} />
+              <Linkedin size={20} color="#9ca3af" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialLink}>
-              <Mail size={20} color={THEME.textLight} />
+              <Mail size={20} color="#9ca3af" />
             </TouchableOpacity>
           </View>
         </View>
-
         <View style={styles.footerLinks}>
           <View style={styles.linkColumn}>
             <Text style={styles.linkColumnTitle}>Product</Text>
@@ -506,7 +499,6 @@ const ScenarioPanelScreen = ({ navigation }) => {
               <Text style={styles.linkText}>Solutions</Text>
             </TouchableOpacity>
           </View>
-
           <View style={styles.linkColumn}>
             <Text style={styles.linkColumnTitle}>Resources</Text>
             <TouchableOpacity style={styles.linkItem}>
@@ -522,7 +514,6 @@ const ScenarioPanelScreen = ({ navigation }) => {
               <Text style={styles.linkText}>Blog</Text>
             </TouchableOpacity>
           </View>
-
           <View style={styles.linkColumn}>
             <Text style={styles.linkColumnTitle}>Company</Text>
             <TouchableOpacity style={styles.linkItem}>
@@ -540,7 +531,6 @@ const ScenarioPanelScreen = ({ navigation }) => {
           </View>
         </View>
       </View>
-
       <View style={styles.footerBottom}>
         <Text style={styles.copyright}>© 2024 Analytics Depot. All rights reserved.</Text>
       </View>
@@ -548,19 +538,16 @@ const ScenarioPanelScreen = ({ navigation }) => {
   )
 
   return (
-    <LinearGradient colors={THEME.background} style={styles.container}>
+    <GradientView colors={["#ff9a9e", "#fecfef", "#fecfef"]} style={styles.container}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {renderHeader()}
         {renderHeroSection()}
         {renderTabNavigation()}
-
         {activeTab === "assumptions" && renderAssumptionsTab()}
         {activeTab === "scenarios" && renderScenariosTab()}
         {activeTab === "impact" && renderImpactTab()}
-
         {renderFooter()}
       </ScrollView>
-
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -568,7 +555,7 @@ const ScenarioPanelScreen = ({ navigation }) => {
         navigation={navigation}
         currentScreen="ScenarioPanel"
       />
-    </LinearGradient>
+    </GradientView>
   )
 }
 
@@ -608,7 +595,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 16,
     paddingVertical: 12,
   },
@@ -633,7 +620,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   userName: {
-    color: THEME.text,
+    color: "#ffffff",
     fontWeight: "600",
     marginRight: 4,
   },
@@ -645,13 +632,13 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 36,
     fontWeight: "bold",
-    color: THEME.text,
+    color: "#ffffff",
     marginBottom: 16,
     textAlign: "center",
   },
   heroSubtitle: {
     fontSize: 16,
-    color: THEME.textLight,
+    color: "#9ca3af",
     textAlign: "center",
     lineHeight: 24,
     maxWidth: width - 40,
@@ -674,15 +661,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   activeTab: {
-    backgroundColor: THEME.text,
+    backgroundColor: "#ffffff",
   },
   tabText: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 14,
     fontWeight: "500",
   },
   activeTabText: {
-    color: THEME.primary,
+    color: "#ff9a9e",
   },
   tabContent: {
     paddingHorizontal: 20,
@@ -691,13 +678,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: THEME.text,
+    color: "#ffffff",
     marginBottom: 8,
     textAlign: "center",
   },
   sectionSubtitle: {
     fontSize: 14,
-    color: THEME.textLight,
+    color: "#9ca3af",
     textAlign: "center",
     marginBottom: 20,
     lineHeight: 20,
@@ -739,19 +726,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   driverName: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 4,
   },
   driverValue: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 4,
   },
   driverDescription: {
-    color: THEME.textLight,
+    color: "#9ca3af",
     fontSize: 10,
     lineHeight: 14,
   },
@@ -781,27 +768,27 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   scenarioImpact: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 20,
     fontWeight: "bold",
   },
   scenarioProbability: {
-    color: THEME.textLight,
+    color: "#9ca3af",
     fontSize: 12,
   },
   scenarioName: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 8,
   },
   scenarioDescription: {
-    color: THEME.textLight,
+    color: "#9ca3af",
     fontSize: 14,
     marginBottom: 8,
   },
   scenarioDetails: {
-    color: THEME.textLight,
+    color: "#9ca3af",
     fontSize: 12,
     lineHeight: 16,
   },
@@ -820,7 +807,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   assumptionTitle: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 16,
     fontWeight: "600",
     flex: 1,
@@ -832,12 +819,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   categoryText: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 10,
     fontWeight: "500",
   },
   assumptionDescription: {
-    color: THEME.textLight,
+    color: "#9ca3af",
     fontSize: 14,
     lineHeight: 18,
   },
@@ -858,7 +845,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   comparisonName: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 14,
     fontWeight: "600",
   },
@@ -867,11 +854,11 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   comparisonImpact: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 12,
   },
   comparisonProbability: {
-    color: THEME.textLight,
+    color: "#9ca3af",
     fontSize: 10,
   },
   impactCard: {
@@ -883,7 +870,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255, 255, 255, 0.2)",
   },
   impactScenario: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 12,
@@ -897,7 +884,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   impactLabel: {
-    color: THEME.textLight,
+    color: "#9ca3af",
     fontSize: 12,
     marginBottom: 4,
   },
@@ -920,19 +907,19 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255, 255, 255, 0.2)",
   },
   riskTitle: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 12,
     fontWeight: "600",
     marginBottom: 8,
   },
   riskValue: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 4,
   },
   riskDescription: {
-    color: THEME.textLight,
+    color: "#9ca3af",
     fontSize: 10,
     textAlign: "center",
     lineHeight: 14,
@@ -952,12 +939,12 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   footerTitle: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 20,
     fontWeight: "bold",
   },
   footerDescription: {
-    color: THEME.textLight,
+    color: "#9ca3af",
     fontSize: 14,
     lineHeight: 20,
   },
@@ -976,7 +963,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   linkColumnTitle: {
-    color: THEME.text,
+    color: "#ffffff",
     fontSize: 16,
     fontWeight: "600",
   },
@@ -984,7 +971,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   linkText: {
-    color: THEME.textLight,
+    color: "#9ca3af",
     fontSize: 14,
   },
   footerBottom: {
@@ -995,7 +982,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   copyright: {
-    color: THEME.textLight,
+    color: "#9ca3af",
     fontSize: 12,
   },
 })

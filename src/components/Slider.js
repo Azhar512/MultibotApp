@@ -1,61 +1,62 @@
-"use client"
-
-import { View, Text, StyleSheet, PanGestureHandler, Animated } from "react-native"
-import { useState, useRef } from "react"
-import { THEME } from "../styles/globalStyles"
+import React from "react";
+import { View, Text, StyleSheet, PanResponder, Animated } from "react-native";
+import { useState, useRef } from "react";
+import { THEME } from "../styles/globalStyles";
 
 const Slider = ({ value, onValueChange, min = 0, max = 100, step = 1, label, style }) => {
-  const [sliderWidth, setSliderWidth] = useState(0)
-  const pan = useRef(new Animated.Value(0)).current
-  const [isDragging, setIsDragging] = useState(false)
+  const [sliderWidth, setSliderWidth] = useState(0);
+  const pan = useRef(new Animated.Value(0)).current;
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleGestureEvent = Animated.event([{ nativeEvent: { translationX: pan } }], {
-    useNativeDriver: false,
-  })
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        setIsDragging(true);
+      },
+      onPanResponderMove: (event, gestureState) => {
+        const { dx } = gestureState;
+        const percentage = Math.max(0, Math.min(100, ((dx + (value / max) * sliderWidth) / sliderWidth) * 100));
+        const newValue = Math.round((percentage * max) / 100 / step) * step;
+        onValueChange(Math.max(min, Math.min(max, newValue)));
+      },
+      onPanResponderRelease: () => {
+        setIsDragging(false);
+        pan.setValue(0);
+      },
+    })
+  ).current;
 
-  const handleGestureStateChange = (event) => {
-    if (event.nativeEvent.state === 5) {
-      // Gesture ended
-      setIsDragging(false)
-      const { translationX } = event.nativeEvent
-      const percentage = Math.max(0, Math.min(100, (translationX / sliderWidth) * 100 + value))
-      const newValue = Math.round(percentage / step) * step
-      onValueChange(Math.max(min, Math.min(max, newValue)))
-      pan.setValue(0)
-    } else if (event.nativeEvent.state === 2) {
-      // Gesture began
-      setIsDragging(true)
-    }
-  }
-
-  const thumbPosition = (value / max) * sliderWidth
+  const thumbPosition = (value / max) * sliderWidth;
 
   return (
     <View style={[styles.container, style]}>
       {label && (
         <View style={styles.labelContainer}>
           <Text style={styles.label}>{label}</Text>
-          <Text style={styles.value}>{value}%</Text>
+          <Text style={styles.value}>{Math.round(value)}%</Text>
         </View>
       )}
-      <View style={styles.sliderContainer} onLayout={(event) => setSliderWidth(event.nativeEvent.layout.width - 20)}>
+      <View 
+        style={styles.sliderContainer} 
+        onLayout={(event) => setSliderWidth(event.nativeEvent.layout.width - 20)}
+      >
         <View style={styles.track} />
-        <View style={[styles.fill, { width: `${value}%` }]} />
-        <PanGestureHandler onGestureEvent={handleGestureEvent} onHandlerStateChange={handleGestureStateChange}>
-          <Animated.View
-            style={[
-              styles.thumb,
-              {
-                left: thumbPosition,
-                transform: [{ scale: isDragging ? 1.2 : 1 }],
-              },
-            ]}
-          />
-        </PanGestureHandler>
+        <View style={[styles.fill, { width: `${(value / max) * 100}%` }]} />
+        <Animated.View
+          style={[
+            styles.thumb,
+            {
+              left: thumbPosition,
+              transform: [{ scale: isDragging ? 1.2 : 1 }],
+            },
+          ]}
+          {...panResponder.panHandlers}
+        />
       </View>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -107,6 +108,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-})
+});
 
-export default Slider
+export default Slider;

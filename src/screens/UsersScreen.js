@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import {
   View,
@@ -16,9 +14,9 @@ import {
   Dimensions,
 } from "react-native"
 import { Picker } from "@react-native-picker/picker"
-import LinearGradient from "react-native-linear-gradient"
 import Icon from "react-native-vector-icons/Feather"
-import { THEME } from '../styles/globalStyles';
+import GradientView from "../components/GradientView"
+
 const { width } = Dimensions.get("window")
 
 // Mock API functions (replace with actual API calls)
@@ -110,7 +108,6 @@ const UsersScreen = () => {
       setLoading(true)
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
-
       // Filter users based on search term
       let filteredUsers = mockUsers
       if (searchTerm) {
@@ -121,7 +118,6 @@ const UsersScreen = () => {
             user._id.includes(searchTerm),
         )
       }
-
       setUsers(filteredUsers)
       setPagination((prev) => ({
         ...prev,
@@ -237,7 +233,7 @@ const UsersScreen = () => {
         setShowUserModal(true)
       }}
     >
-      <LinearGradient colors={["rgba(255,255,255,0.1)", "rgba(255,255,255,0.05)"]} style={styles.userCardGradient}>
+      <GradientView colors={["rgba(255,255,255,0.1)", "rgba(255,255,255,0.05)"]} style={styles.userCardGradient}>
         <View style={styles.userCardHeader}>
           <View style={styles.userAvatar}>
             <Icon name="user" size={20} color="#fff" />
@@ -250,7 +246,6 @@ const UsersScreen = () => {
             <Text style={styles.statusText}>{user.status}</Text>
           </View>
         </View>
-
         <View style={styles.userStats}>
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>Interactions</Text>
@@ -261,12 +256,10 @@ const UsersScreen = () => {
             <Text style={styles.statValue}>{new Date(user.lastInteraction).toLocaleDateString()}</Text>
           </View>
         </View>
-
         <View style={styles.sentimentSection}>
           <Text style={styles.sentimentLabel}>Sentiment</Text>
           <SentimentIndicator value={user.sentiment} />
         </View>
-
         <View style={styles.userActions}>
           <TouchableOpacity
             style={[styles.actionButton, styles.messageButton]}
@@ -290,7 +283,7 @@ const UsersScreen = () => {
             <Icon name="download" size={16} color="#22c55e" />
           </TouchableOpacity>
         </View>
-      </LinearGradient>
+      </GradientView>
     </TouchableOpacity>
   )
 
@@ -310,7 +303,6 @@ const UsersScreen = () => {
               <Icon name="x" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
-
           <ScrollView style={styles.modalBody}>
             <View style={styles.filterSection}>
               <Text style={styles.filterLabel}>Date Joined</Text>
@@ -328,7 +320,6 @@ const UsersScreen = () => {
                 </Picker>
               </View>
             </View>
-
             <View style={styles.filterSection}>
               <Text style={styles.filterLabel}>Interaction Frequency</Text>
               <View style={styles.pickerContainer}>
@@ -345,7 +336,6 @@ const UsersScreen = () => {
                 </Picker>
               </View>
             </View>
-
             <View style={styles.filterSection}>
               <Text style={styles.filterLabel}>Sentiment</Text>
               <View style={styles.pickerContainer}>
@@ -358,12 +348,11 @@ const UsersScreen = () => {
                   <Picker.Item label="All Sentiments" value="" color="#fff" />
                   <Picker.Item label="Positive" value="positive" color="#fff" />
                   <Picker.Item label="Neutral" value="neutral" color="#fff" />
-                  <Picker.Item label="Negative" value="negative" color="#fff" />
+                  <Picker.Item label="Low" value="low" color="#fff" />
                 </Picker>
               </View>
             </View>
           </ScrollView>
-
           <View style={styles.modalFooter}>
             <TouchableOpacity
               style={styles.clearFiltersButton}
@@ -402,7 +391,6 @@ const UsersScreen = () => {
               <Icon name="x" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
-
           {selectedUser && (
             <ScrollView style={styles.modalBody}>
               <View style={styles.profileSection}>
@@ -424,7 +412,6 @@ const UsersScreen = () => {
                   </View>
                 </View>
               </View>
-
               <View style={styles.detailSection}>
                 <Text style={styles.sectionTitle}>Profile Information</Text>
                 <View style={styles.detailGrid}>
@@ -438,7 +425,6 @@ const UsersScreen = () => {
                   </View>
                 </View>
               </View>
-
               <View style={styles.detailSection}>
                 <Text style={styles.sectionTitle}>Interaction Summary</Text>
                 <View style={styles.interactionStats}>
@@ -471,18 +457,18 @@ const UsersScreen = () => {
 
   if (loading && !refreshing) {
     return (
-      <LinearGradient colors={theme.gradients.primary} style={styles.loadingContainer}>
+      <GradientView colors={["#ff9a9e", "#fecfef", "#fecfef"]} style={styles.loadingContainer}>
         <View style={styles.loadingContent}>
           <ActivityIndicator size="large" color="#fff" />
           <Text style={styles.loadingText}>Loading users...</Text>
         </View>
-      </LinearGradient>
+      </GradientView>
     )
   }
 
   if (error && !loading) {
     return (
-      <LinearGradient colors={theme.gradients.primary} style={styles.errorContainer}>
+      <GradientView colors={["#ff9a9e", "#fecfef", "#fecfef"]} style={styles.errorContainer}>
         <View style={styles.errorContent}>
           <Icon name="alert-circle" size={48} color="#fff" />
           <Text style={styles.errorText}>{error}</Text>
@@ -490,12 +476,12 @@ const UsersScreen = () => {
             <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
-      </LinearGradient>
+      </GradientView>
     )
   }
 
   return (
-    <LinearGradient colors={theme.gradients.primary} style={styles.container}>
+    <GradientView colors={["#ff9a9e", "#fecfef", "#fecfef"]} style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
@@ -541,7 +527,7 @@ const UsersScreen = () => {
       {/* Modals */}
       <FiltersModal />
       <UserDetailModal />
-    </LinearGradient>
+    </GradientView>
   )
 }
 
@@ -588,7 +574,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   retryButton: {
-    backgroundColor: "rgba(139, 69, 19, 0.8)",
+    backgroundColor: "#ff9a9e",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
@@ -797,7 +783,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: "rgba(139, 69, 19, 0.95)",
+    backgroundColor: "#ff9a9e",
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.2)",
@@ -862,7 +848,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   applyFiltersButton: {
-    backgroundColor: "rgba(139, 69, 19, 0.8)",
+    backgroundColor: "#ff9a9e",
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 10,

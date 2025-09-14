@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import {
   View,
@@ -13,9 +11,8 @@ import {
   Alert,
   Dimensions,
 } from "react-native"
-import LinearGradient from "react-native-linear-gradient"
 import Icon from "react-native-vector-icons/Feather"
-import { THEME } from "../styles/globalStyles"
+import GradientView from "../components/GradientView"
 
 const { width } = Dimensions.get("window")
 
@@ -291,7 +288,7 @@ const SettingsScreen = () => {
   )
 
   return (
-    <LinearGradient colors={theme.gradients.primary} style={styles.container}>
+    <GradientView colors={["#ff9a9e", "#fecfef", "#fecfef"]} style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
@@ -502,7 +499,7 @@ const SettingsScreen = () => {
       <BackupCodesModal />
       <SessionsModal />
       <SecurityLogModal />
-    </LinearGradient>
+    </GradientView>
   )
 }
 
@@ -624,7 +621,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   saveButton: {
-    backgroundColor: "rgba(139, 69, 19, 0.8)",
+    backgroundColor: "#ff9a9e",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -708,7 +705,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   setupButton: {
-    backgroundColor: "rgba(59, 130, 246, 0.8)",
+    backgroundColor: "#3b82f6",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -816,7 +813,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: "rgba(139, 69, 19, 0.95)",
+    backgroundColor: "#ff9a9e",
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.2)",
@@ -861,7 +858,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   generateCodesButton: {
-    backgroundColor: "rgba(139, 69, 19, 0.8)",
+    backgroundColor: "#ff9a9e",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

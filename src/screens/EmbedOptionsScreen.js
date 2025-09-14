@@ -1,11 +1,9 @@
 "use client"
-
 import { useState } from "react"
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Alert, Dimensions, Image } from "react-native"
-import LinearGradient from "react-native-linear-gradient"
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Alert, Dimensions, Image, StatusBar } from "react-native"
 import { Picker } from "@react-native-picker/picker"
 // import DocumentPicker from 'react-native-document-picker'; // ✅ Commented out
-import Clipboard from '@react-native-clipboard/clipboard';
+import * as Clipboard from 'expo-clipboard';
 import {
   ChevronRight,
   Github,
@@ -23,6 +21,7 @@ import { THEME } from "../styles/globalStyles"
 import Card from "../components/Card"
 import ColorPicker from "../components/ColorPicker"
 import Sidebar from "../components/Sidebar"
+import GradientView from "../components/GradientView"
 
 const { width } = Dimensions.get("window")
 
@@ -109,6 +108,7 @@ const EmbedOptionsScreen = ({ navigation }) => {
 </script>
 <script src="https://embed.example.com/widget.js"></script>`
   }
+
   const copyToClipboard = async () => {
     try {
       await Clipboard.setStringAsync(generateEmbedCode())
@@ -144,28 +144,26 @@ const EmbedOptionsScreen = ({ navigation }) => {
   const renderHeader = () => (
     <View style={styles.header}>
       <TouchableOpacity style={styles.menuButton} onPress={() => setSidebarOpen(true)}>
-        <Menu size={24} color={THEME.text} />
+        <Menu size={24} color="rgba(255,255,255,0.8)" />
       </TouchableOpacity>
-
       <View style={styles.searchContainer}>
-        <Search size={16} color={THEME.textLight} style={styles.searchIcon} />
+        <Search size={16} color="rgba(255,255,255,0.6)" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           value={searchText}
           onChangeText={setSearchText}
           placeholder="Search"
-          placeholderTextColor={THEME.textLight}
+          placeholderTextColor="rgba(255,255,255,0.6)"
         />
       </View>
-
       <View style={styles.headerActions}>
         <TouchableOpacity style={styles.notificationButton}>
-          <Bell size={20} color={THEME.text} />
+          <Bell size={20} color="rgba(255,255,255,0.8)" />
         </TouchableOpacity>
         <View style={styles.userProfile}>
-          <LinearGradient colors={["#f97316", "#ec4899"]} style={styles.avatar} />
-          <Text style={styles.userName}>Azhar</Text>
-          <ChevronRight size={16} color={THEME.text} />
+          <View style={styles.avatar}>
+          </View>
+          <ChevronRight size={16} color="rgba(255,255,255,0.8)" />
         </View>
       </View>
     </View>
@@ -199,7 +197,6 @@ const EmbedOptionsScreen = ({ navigation }) => {
   const renderCustomizationForm = () => (
     <Card isSettingsCard>
       <Text style={styles.sectionTitle}>Customize Your Chat Widget</Text>
-
       <View style={styles.formGrid}>
         {/* Theme Selection */}
         <View style={styles.formField}>
@@ -217,7 +214,6 @@ const EmbedOptionsScreen = ({ navigation }) => {
             </Picker>
           </View>
         </View>
-
         {/* Width */}
         <View style={styles.formField}>
           <Text style={styles.fieldLabel}>Width (px)</Text>
@@ -227,10 +223,9 @@ const EmbedOptionsScreen = ({ navigation }) => {
             onChangeText={(value) => handleCustomizationChange("width", value)}
             keyboardType="numeric"
             placeholder="380"
-            placeholderTextColor={THEME.textLight}
+            placeholderTextColor="rgba(255,255,255,0.6)"
           />
         </View>
-
         {/* Height */}
         <View style={styles.formField}>
           <Text style={styles.fieldLabel}>Height (px)</Text>
@@ -240,10 +235,9 @@ const EmbedOptionsScreen = ({ navigation }) => {
             onChangeText={(value) => handleCustomizationChange("height", value)}
             keyboardType="numeric"
             placeholder="600"
-            placeholderTextColor={THEME.textLight}
+            placeholderTextColor="rgba(255,255,255,0.6)"
           />
         </View>
-
         {/* Position */}
         <View style={styles.formField}>
           <Text style={styles.fieldLabel}>Position</Text>
@@ -261,7 +255,6 @@ const EmbedOptionsScreen = ({ navigation }) => {
           </View>
         </View>
       </View>
-
       {/* Color Pickers */}
       <View style={styles.colorSection}>
         <ColorPicker
@@ -275,12 +268,11 @@ const EmbedOptionsScreen = ({ navigation }) => {
           onValueChange={(value) => handleCustomizationChange("secondaryColor", value)}
         />
       </View>
-
       {/* Avatar Upload */}
       <View style={styles.avatarSection}>
         <Text style={styles.fieldLabel}>Bot Avatar</Text>
         <TouchableOpacity style={styles.uploadArea} onPress={handleAvatarUpload}>
-          <Upload size={32} color={THEME.textLight} />
+          <Upload size={32} color="rgba(255,255,255,0.6)" />
           <Text style={styles.uploadText}>Click to upload</Text>
           <Text style={styles.uploadSubtext}>PNG, JPG or GIF (MAX. 800x400px)</Text>
         </TouchableOpacity>
@@ -361,20 +353,19 @@ const EmbedOptionsScreen = ({ navigation }) => {
           </Text>
           <View style={styles.socialLinks}>
             <TouchableOpacity style={styles.socialLink}>
-              <Github size={20} color={THEME.textLight} />
+              <Github size={20} color="rgba(255,255,255,0.6)" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialLink}>
-              <Twitter size={20} color={THEME.textLight} />
+              <Twitter size={20} color="rgba(255,255,255,0.6)" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialLink}>
-              <Linkedin size={20} color={THEME.textLight} />
+              <Linkedin size={20} color="rgba(255,255,255,0.6)" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialLink}>
-              <Mail size={20} color={THEME.textLight} />
+              <Mail size={20} color="rgba(255,255,255,0.6)" />
             </TouchableOpacity>
           </View>
         </View>
-
         <View style={styles.footerLinks}>
           <View style={styles.linkColumn}>
             <Text style={styles.linkColumnTitle}>Product</Text>
@@ -391,7 +382,6 @@ const EmbedOptionsScreen = ({ navigation }) => {
               <Text style={styles.linkText}>API</Text>
             </TouchableOpacity>
           </View>
-
           <View style={styles.linkColumn}>
             <Text style={styles.linkColumnTitle}>Support</Text>
             <TouchableOpacity style={styles.linkItem}>
@@ -409,7 +399,6 @@ const EmbedOptionsScreen = ({ navigation }) => {
           </View>
         </View>
       </View>
-
       <View style={styles.footerBottom}>
         <Text style={styles.copyright}>© 2024 EmbedOptions. All rights reserved.</Text>
       </View>
@@ -417,58 +406,59 @@ const EmbedOptionsScreen = ({ navigation }) => {
   )
 
   return (
-    <LinearGradient colors={THEME.background} style={styles.container}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {renderHeader()}
-        {renderHeroSection()}
-        {renderTabNavigation()}
-
-        {activeTab === "embed-options" && (
-          <View style={styles.mainContent}>
-            {renderCustomizationForm()}
-            {renderPreview()}
-            {renderEmbedCode()}
-            {renderActionButtons()}
-          </View>
-        )}
-
-        {activeTab === "features" && (
-          <Card isSettingsCard>
-            <Text style={styles.sectionTitle}>Features</Text>
-            <Text style={styles.featureText}>
-              • Fully customizable themes and colors{"\n"}• Multiple positioning options{"\n"}• Custom avatar support
-              {"\n"}• Responsive design{"\n"}• Easy integration{"\n"}• Real-time preview
-            </Text>
-          </Card>
-        )}
-
-        {activeTab === "pricing" && (
-          <Card isSettingsCard>
-            <Text style={styles.sectionTitle}>Pricing</Text>
-            <Text style={styles.pricingText}>
-              Free tier: Up to 1,000 messages/month{"\n"}
-              Pro tier: Unlimited messages - $29/month{"\n"}
-              Enterprise: Custom solutions available
-            </Text>
-          </Card>
-        )}
-
-        {renderFooter()}
-      </ScrollView>
-
-      <Sidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        navItems={navItems}
-        navigation={navigation}
-        currentScreen="EmbedOptions"
-      />
-    </LinearGradient>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#FF8A9B" />
+      <GradientView colors={["#FF8A9B", "#FF9A9A"]} style={styles.backgroundGradient}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {renderHeader()}
+          {renderHeroSection()}
+          {renderTabNavigation()}
+          {activeTab === "embed-options" && (
+            <View style={styles.mainContent}>
+              {renderCustomizationForm()}
+              {renderPreview()}
+              {renderEmbedCode()}
+              {renderActionButtons()}
+            </View>
+          )}
+          {activeTab === "features" && (
+            <Card isSettingsCard>
+              <Text style={styles.sectionTitle}>Features</Text>
+              <Text style={styles.featureText}>
+                • Fully customizable themes and colors{"\n"}• Multiple positioning options{"\n"}• Custom avatar support
+                {"\n"}• Responsive design{"\n"}• Easy integration{"\n"}• Real-time preview
+              </Text>
+            </Card>
+          )}
+          {activeTab === "pricing" && (
+            <Card isSettingsCard>
+              <Text style={styles.sectionTitle}>Pricing</Text>
+              <Text style={styles.pricingText}>
+                Free tier: Up to 1,000 messages/month{"\n"}
+                Pro tier: Unlimited messages - $29/month{"\n"}
+                Enterprise: Custom solutions available
+              </Text>
+            </Card>
+          )}
+          {renderFooter()}
+        </ScrollView>
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          navItems={navItems}
+          navigation={navigation}
+          currentScreen="EmbedOptions"
+        />
+      </GradientView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  backgroundGradient: {
     flex: 1,
   },
   content: {
@@ -525,7 +515,15 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
+    backgroundColor: "#FF9A56",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 8,
+  },
+  userInitial: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
   },
   userName: {
     color: THEME.text,
@@ -546,7 +544,7 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     fontSize: 16,
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     textAlign: "center",
     lineHeight: 24,
     maxWidth: width - 40,
@@ -577,7 +575,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   activeTabText: {
-    color: THEME.primary,
+    color: "#FF8A9B",
   },
   mainContent: {
     paddingHorizontal: 20,
@@ -640,13 +638,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
   uploadText: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 14,
     fontWeight: "600",
     marginTop: 8,
   },
   uploadSubtext: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.6)",
     fontSize: 12,
     marginTop: 4,
   },
@@ -697,7 +695,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "linear-gradient(to right, #a855f7, #ec4899)",
+    backgroundColor: "#a855f7",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -794,7 +792,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   footerDescription: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 14,
     lineHeight: 20,
   },
@@ -821,7 +819,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   linkText: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 14,
   },
   footerBottom: {
@@ -832,7 +830,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   copyright: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.6)",
     fontSize: 12,
   },
 })

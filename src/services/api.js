@@ -1,49 +1,38 @@
 // src/services/api.js
+// This file defines your API service functions.
+
+import { callApi } from "../utils/api" // Import the new callApi utility
+
 export const dashboardAPI = {
-  getStats: async () => {
-    // Mock data for now
-    return {
-      success: true,
-      data: {
-        totalInteractions: 1250,
-        successRate: 94.5,
-        activeUsers: 342,
-        averageResponseTime: 1200,
-        previousPeriod: {
-          totalInteractions: 1100,
-          successRate: 92.1,
-          activeUsers: 310,
-          averageResponseTime: 1400
-        },
-        interactionsByType: {
-          chat: 45,
-          email: 25,
-          voice: 20,
-          appointment: 10
-        }
-      }
-    };
+  getStats: async (token) => {
+    // Pass the token to callApi
+    return callApi("/dashboard/stats", "GET", undefined, token)
   },
-  
-  getInteractionTrends: async () => {
-    return {
-      success: true,
-      data: [
-        { date: '2024-01-01', interactions: 120 },
-        { date: '2024-01-02', interactions: 150 },
-        { date: '2024-01-03', interactions: 180 }
-      ]
-    };
+  getInteractionTrends: async (token) => {
+    // Pass the token to callApi
+    return callApi("/dashboard/trends", "GET", undefined, token)
   },
-  
-  getPersonalityEffectiveness: async () => {
-    return {
-      success: true,
-      data: {
-        friendly: 85,
-        professional: 92,
-        helpful: 88
-      }
-    };
-  }
-};
+  getPersonalityEffectiveness: async (token) => {
+    // Pass the token to callApi
+    return callApi("/dashboard/personality", "GET", undefined, token)
+  },
+  // Add other API calls here as needed
+}
+
+// Example for other APIs if you have them
+export const userAPI = {
+  getUsers: async (token) => {
+    return callApi("/users", "GET", undefined, token)
+  },
+  // ... other user-related API calls
+}
+
+// You might also have an authAPI if you separated it
+export const authAPI = {
+  login: async (email, password) => {
+    return callApi("/auth/login", "POST", { email, password })
+  },
+  register: async (name, email, password) => {
+    return callApi("/auth/register", "POST", { name, email, password })
+  },
+}

@@ -1,5 +1,4 @@
 import { View, Text, StyleSheet, Dimensions } from "react-native"
-import LinearGradient from "react-native-linear-gradient"
 import { THEME } from "../styles/globalStyles"
 
 const { width } = Dimensions.get("window")
@@ -20,30 +19,34 @@ const Card = ({
 
     return (
       <View style={[styles.container, style]}>
-        <LinearGradient colors={["rgba(255, 255, 255, 0.1)", "rgba(255, 255, 255, 0.05)"]} style={styles.statsCard}>
-          <View style={styles.header}>
-            <Text style={styles.title}>{stat.title}</Text>
-            <View style={[styles.iconContainer, { backgroundColor: `${stat.color}20` }]}>
-              <stat.icon size={20} color={stat.color} />
+        <View style={styles.statsCard}>
+          {/* Gradient effect using multiple layers */}
+          <View style={styles.gradientLayer1} />
+          <View style={styles.gradientLayer2} />
+
+          <View style={styles.cardContent}>
+            <View style={styles.header}>
+              <Text style={styles.title}>{stat.title}</Text>
+              <View style={[styles.iconContainer, { backgroundColor: `${stat.color}30` }]}>
+                <stat.icon size={20} color={stat.color} />
+              </View>
+            </View>
+            <Text style={styles.value}>{stat.value}</Text>
+            <View style={styles.changeContainer}>
+              <View
+                style={[
+                  styles.changeBadge,
+                  { backgroundColor: isPositive ? "rgba(74, 222, 128, 0.2)" : "rgba(248, 113, 113, 0.2)" },
+                ]}
+              >
+                <Text style={[styles.changeText, { color: isPositive ? THEME.success : THEME.error }]}>
+                  {stat.change}
+                </Text>
+              </View>
+              <Text style={styles.changeLabel}>from last month</Text>
             </View>
           </View>
-
-          <Text style={styles.value}>{stat.value}</Text>
-
-          <View style={styles.changeContainer}>
-            <View
-              style={[
-                styles.changeBadge,
-                { backgroundColor: isPositive ? "rgba(74, 222, 128, 0.2)" : "rgba(248, 113, 113, 0.2)" },
-              ]}
-            >
-              <Text style={[styles.changeText, { color: isPositive ? THEME.success : THEME.error }]}>
-                {stat.change}
-              </Text>
-            </View>
-            <Text style={styles.changeLabel}>from last month</Text>
-          </View>
-        </LinearGradient>
+        </View>
       </View>
     )
   }
@@ -51,13 +54,13 @@ const Card = ({
   // Settings card for bot interaction
   if (isSettingsCard) {
     return (
-      <LinearGradient
-        colors={["rgba(255, 255, 255, 0.1)", "rgba(255, 255, 255, 0.05)"]}
-        style={[styles.settingsCard, style]}
-      >
-        {title && <Text style={styles.settingsTitle}>{title}</Text>}
-        {children}
-      </LinearGradient>
+      <View style={[styles.settingsCard, style]}>
+        <View style={styles.settingsGradientLayer} />
+        <View style={styles.cardContent}>
+          {title && <Text style={styles.settingsTitle}>{title}</Text>}
+          {children}
+        </View>
+      </View>
     )
   }
 
@@ -66,17 +69,45 @@ const Card = ({
 }
 
 const styles = StyleSheet.create({
-  // Stats card styles (existing)
   container: {
     width: (width - 60) / 2,
     marginBottom: 15,
     marginRight: 10,
   },
   statsCard: {
-    padding: 20,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.2)",
+    overflow: "hidden",
+    // Enhanced shadow
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  gradientLayer1: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+  },
+  gradientLayer2: {
+    position: "absolute",
+    top: "50%",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+  },
+  cardContent: {
+    padding: 20,
+    zIndex: 1,
   },
   header: {
     flexDirection: "row",
@@ -118,13 +149,28 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: THEME.textLight,
   },
-  // Settings card styles (new)
   settingsCard: {
-    padding: 20,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.2)",
     marginBottom: 20,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  settingsGradientLayer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.12)",
   },
   settingsTitle: {
     fontSize: 18,
@@ -132,7 +178,6 @@ const styles = StyleSheet.create({
     color: THEME.text,
     marginBottom: 15,
   },
-  // Default card styles
   defaultCard: {
     backgroundColor: "rgba(255, 255, 255, 0.1)",
     borderRadius: 12,

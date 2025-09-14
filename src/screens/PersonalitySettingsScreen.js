@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import {
   View,
@@ -13,8 +12,8 @@ import {
   Modal,
   FlatList,
   Dimensions,
+  StatusBar,
 } from "react-native"
-import LinearGradient from "react-native-linear-gradient"
 import { Picker } from "@react-native-picker/picker"
 //import DocumentPicker from 'react-native-document-picker';
 import {
@@ -37,6 +36,7 @@ import { THEME } from "../styles/globalStyles"
 import Card from "../components/Card"
 import Slider from "../components/Slider"
 import Sidebar from "../components/Sidebar"
+import GradientView from "../components/GradientView"
 
 const { width } = Dimensions.get("window")
 
@@ -163,37 +163,39 @@ const PersonalitySettingsScreen = ({ navigation }) => {
       if (useEmojis) response += " 😊"
       setPreviewResponse(response)
     }
+
     generatePreview()
   }, [behaviorSliders, useEmojis, tone, formalityLevel])
 
   // Handle file upload for training
-const handleFileUpload = async () => {
-  try {
-    // Temporarily disabled - will add back with compatible package
-    Alert.alert(
-      "File Upload", 
-      "File upload feature will be available soon. For now, you can manually configure training data.",
-      [{ text: "OK" }]
-    )
-    
-    // TODO: Replace with expo-document-picker or compatible alternative
-    // const result = await DocumentPicker.getDocumentAsync({
-    //   type: ["text/plain", "text/csv", "application/json"],
-    //   copyToCacheDirectory: true,
-    //   multiple: true,
-    // })
-    // if (!result.canceled && result.assets) {
-    //   setTrainingData((prev) => ({
-    //     ...prev,
-    //     uploadedFiles: [...prev.uploadedFiles, ...result.assets],
-    //     lastTrainingDate: new Date().toISOString(),
-    //   }))
-    //   Alert.alert("Success", `${result.assets.length} file(s) uploaded successfully`)
-    // }
-  } catch (error) {
-    Alert.alert("Error", "Failed to upload files")
+  const handleFileUpload = async () => {
+    try {
+      // Temporarily disabled - will add back with compatible package
+      Alert.alert(
+        "File Upload", 
+        "File upload feature will be available soon. For now, you can manually configure training data.",
+        [{ text: "OK" }]
+      )
+      
+      // TODO: Replace with expo-document-picker or compatible alternative
+      // const result = await DocumentPicker.getDocumentAsync({
+      //   type: ["text/plain", "text/csv", "application/json"],
+      //   copyToCacheDirectory: true,
+      //   multiple: true,
+      // })
+      // if (!result.canceled && result.assets) {
+      //   setTrainingData((prev) => ({
+      //     ...prev,
+      //     uploadedFiles: [...prev.uploadedFiles, ...result.assets],
+      //     lastTrainingDate: new Date().toISOString(),
+      //   }))
+      //   Alert.alert("Success", `${result.assets.length} file(s) uploaded successfully`)
+      // }
+    } catch (error) {
+      Alert.alert("Error", "Failed to upload files")
+    }
   }
-}
+
   // Handle FAQ addition
   const handleAddFAQ = () => {
     if (!newFaqQuestion.trim() || !newFaqAnswer.trim()) {
@@ -205,7 +207,6 @@ const handleFileUpload = async () => {
       ...prev,
       customFAQs: [...prev.customFAQs, { question: newFaqQuestion, answer: newFaqAnswer }],
     }))
-
     setNewFaqQuestion("")
     setNewFaqAnswer("")
     setFaqModalVisible(false)
@@ -322,9 +323,8 @@ const handleFileUpload = async () => {
   const renderHeader = () => (
     <View style={styles.header}>
       <TouchableOpacity style={styles.menuButton} onPress={() => setSidebarOpen(true)}>
-        <Menu size={24} color={THEME.text} />
+        <Menu size={24} color="rgba(255,255,255,0.8)" />
       </TouchableOpacity>
-
       <View style={styles.headerContent}>
         <View style={styles.headerIcon}>
           <Bot size={32} color={THEME.text} />
@@ -334,15 +334,14 @@ const handleFileUpload = async () => {
           <Text style={styles.headerSubtitle}>Configure your AI assistant's personality and behavior</Text>
         </View>
       </View>
-
       <View style={styles.headerActions}>
         <TouchableOpacity style={styles.notificationButton}>
-          <Bell size={20} color={THEME.text} />
+          <Bell size={20} color="rgba(255,255,255,0.8)" />
         </TouchableOpacity>
         <View style={styles.userProfile}>
-          <LinearGradient colors={["#f97316", "#ec4899"]} style={styles.avatar} />
-          <Text style={styles.userName}>Azhar</Text>
-          <ChevronRight size={16} color={THEME.text} />
+          <View style={styles.avatar}>
+          </View>
+          <ChevronRight size={16} color="rgba(255,255,255,0.8)" />
         </View>
       </View>
     </View>
@@ -357,7 +356,7 @@ const handleFileUpload = async () => {
             style={[styles.tab, activeTab === tab.id && styles.activeTab]}
             onPress={() => setActiveTab(tab.id)}
           >
-            <tab.icon size={16} color={activeTab === tab.id ? THEME.primary : THEME.text} />
+            <tab.icon size={16} color={activeTab === tab.id ? "#FF8A9B" : THEME.text} />
             <Text style={[styles.tabText, activeTab === tab.id && styles.activeTabText]}>{tab.label}</Text>
           </TouchableOpacity>
         ))}
@@ -397,7 +396,6 @@ const handleFileUpload = async () => {
               </Picker>
             </View>
           </View>
-
           <View style={styles.pickerField}>
             <Text style={styles.fieldLabel}>Response Length</Text>
             <View style={styles.pickerContainer}>
@@ -414,7 +412,6 @@ const handleFileUpload = async () => {
             </View>
           </View>
         </View>
-
         <View style={styles.checkboxContainer}>
           <View style={styles.checkboxItem}>
             <Switch
@@ -452,7 +449,7 @@ const handleFileUpload = async () => {
           value={previewQuery}
           onChangeText={setPreviewQuery}
           placeholder="Type a sample query..."
-          placeholderTextColor={THEME.textLight}
+          placeholderTextColor="rgba(255,255,255,0.6)"
         />
         <View style={styles.previewContainer}>
           <Text style={styles.previewLabel}>Bot would respond:</Text>
@@ -477,10 +474,9 @@ const handleFileUpload = async () => {
             onChangeText={setGreetingMessage}
             multiline
             numberOfLines={3}
-            placeholderTextColor={THEME.textLight}
+            placeholderTextColor="rgba(255,255,255,0.6)"
           />
         </View>
-
         <View style={styles.messageField}>
           <Text style={styles.fieldLabel}>Farewell Message</Text>
           <TextInput
@@ -489,10 +485,9 @@ const handleFileUpload = async () => {
             onChangeText={setFarewellMessage}
             multiline
             numberOfLines={3}
-            placeholderTextColor={THEME.textLight}
+            placeholderTextColor="rgba(255,255,255,0.6)"
           />
         </View>
-
         <View style={styles.messageField}>
           <Text style={styles.fieldLabel}>Error Message</Text>
           <TextInput
@@ -501,7 +496,7 @@ const handleFileUpload = async () => {
             onChangeText={setErrorMessage}
             multiline
             numberOfLines={3}
-            placeholderTextColor={THEME.textLight}
+            placeholderTextColor="rgba(255,255,255,0.6)"
           />
         </View>
       </Card>
@@ -524,11 +519,10 @@ const handleFileUpload = async () => {
                 }))
               }
               placeholder="Enter API Key"
-              placeholderTextColor={THEME.textLight}
+              placeholderTextColor="rgba(255,255,255,0.6)"
               secureTextEntry
             />
           </View>
-
           <View style={styles.inputField}>
             <Text style={styles.fieldLabel}>Webhook URL</Text>
             <TextInput
@@ -541,11 +535,10 @@ const handleFileUpload = async () => {
                 }))
               }
               placeholder="Enter Webhook URL"
-              placeholderTextColor={THEME.textLight}
+              placeholderTextColor="rgba(255,255,255,0.6)"
               keyboardType="url"
             />
           </View>
-
           <View style={styles.pickerField}>
             <Text style={styles.fieldLabel}>CRM System</Text>
             <View style={styles.pickerContainer}>
@@ -567,7 +560,6 @@ const handleFileUpload = async () => {
             </View>
           </View>
         </View>
-
         <View style={styles.channelsSection}>
           <Text style={styles.sectionTitle}>Communication Channels</Text>
           <View style={styles.checkboxContainer}>
@@ -649,11 +641,10 @@ const handleFileUpload = async () => {
     <View style={styles.tabContent}>
       <Card isSettingsCard title="Upload Training Files">
         <TouchableOpacity style={styles.uploadArea} onPress={handleFileUpload}>
-          <Upload size={32} color={THEME.textLight} />
+          <Upload size={32} color="rgba(255,255,255,0.6)" />
           <Text style={styles.uploadText}>Click to upload files</Text>
           <Text style={styles.uploadSubtext}>Supports .txt, .csv, .json files</Text>
         </TouchableOpacity>
-
         {trainingData.uploadedFiles.length > 0 && (
           <View style={styles.filesContainer}>
             <Text style={styles.filesTitle}>Uploaded Files:</Text>
@@ -677,7 +668,6 @@ const handleFileUpload = async () => {
             <Text style={styles.addButtonText}>Add FAQ</Text>
           </TouchableOpacity>
         </View>
-
         {trainingData.customFAQs.length > 0 ? (
           <FlatList
             data={trainingData.customFAQs}
@@ -707,46 +697,46 @@ const handleFileUpload = async () => {
 
   const renderFAQModal = () => (
     <Modal visible={faqModalVisible} animationType="slide" presentationStyle="pageSheet">
-      <LinearGradient colors={THEME.background} style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>Add New FAQ</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={() => setFaqModalVisible(false)}>
-            <X size={24} color={THEME.text} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.modalContent}>
-          <View style={styles.inputField}>
-            <Text style={styles.fieldLabel}>Question</Text>
-            <TextInput
-              style={styles.messageInput}
-              value={newFaqQuestion}
-              onChangeText={setNewFaqQuestion}
-              placeholder="Enter the question..."
-              placeholderTextColor={THEME.textLight}
-              multiline
-              numberOfLines={3}
-            />
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#FF8A9B" />
+        <GradientView colors={["#FF8A9B", "#FF9A9A"]} style={styles.backgroundGradient}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Add New FAQ</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={() => setFaqModalVisible(false)}>
+              <X size={24} color={THEME.text} />
+            </TouchableOpacity>
           </View>
-
-          <View style={styles.inputField}>
-            <Text style={styles.fieldLabel}>Answer</Text>
-            <TextInput
-              style={styles.messageInput}
-              value={newFaqAnswer}
-              onChangeText={setNewFaqAnswer}
-              placeholder="Enter the answer..."
-              placeholderTextColor={THEME.textLight}
-              multiline
-              numberOfLines={4}
-            />
+          <View style={styles.modalContent}>
+            <View style={styles.inputField}>
+              <Text style={styles.fieldLabel}>Question</Text>
+              <TextInput
+                style={styles.messageInput}
+                value={newFaqQuestion}
+                onChangeText={setNewFaqQuestion}
+                placeholder="Enter the question..."
+                placeholderTextColor="rgba(255,255,255,0.6)"
+                multiline
+                numberOfLines={3}
+              />
+            </View>
+            <View style={styles.inputField}>
+              <Text style={styles.fieldLabel}>Answer</Text>
+              <TextInput
+                style={styles.messageInput}
+                value={newFaqAnswer}
+                onChangeText={setNewFaqAnswer}
+                placeholder="Enter the answer..."
+                placeholderTextColor="rgba(255,255,255,0.6)"
+                multiline
+                numberOfLines={4}
+              />
+            </View>
+            <TouchableOpacity style={styles.saveButton} onPress={handleAddFAQ}>
+              <Text style={styles.saveButtonText}>Add FAQ</Text>
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity style={styles.saveButton} onPress={handleAddFAQ}>
-            <Text style={styles.saveButtonText}>Add FAQ</Text>
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
+        </GradientView>
+      </View>
     </Modal>
   )
 
@@ -764,34 +754,36 @@ const handleFileUpload = async () => {
   )
 
   return (
-    <LinearGradient colors={THEME.background} style={styles.container}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {renderHeader()}
-        {renderTabNavigation()}
-
-        {activeTab === "behavior" && renderBehaviorTab()}
-        {activeTab === "messages" && renderMessagesTab()}
-        {activeTab === "integration" && renderIntegrationTab()}
-        {activeTab === "training" && renderTrainingTab()}
-
-        {renderActionButtons()}
-      </ScrollView>
-
-      {renderFAQModal()}
-
-      <Sidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        navItems={navItems}
-        navigation={navigation}
-        currentScreen="PersonalitySettings"
-      />
-    </LinearGradient>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#FF8A9B" />
+      <GradientView colors={["#FF8A9B", "#FF9A9A"]} style={styles.backgroundGradient}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {renderHeader()}
+          {renderTabNavigation()}
+          {activeTab === "behavior" && renderBehaviorTab()}
+          {activeTab === "messages" && renderMessagesTab()}
+          {activeTab === "integration" && renderIntegrationTab()}
+          {activeTab === "training" && renderTrainingTab()}
+          {renderActionButtons()}
+        </ScrollView>
+        {renderFAQModal()}
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          navItems={navItems}
+          navigation={navigation}
+          currentScreen="PersonalitySettings"
+        />
+      </GradientView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  backgroundGradient: {
     flex: 1,
   },
   content: {
@@ -827,7 +819,7 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 12,
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
   },
   headerActions: {
     flexDirection: "row",
@@ -847,7 +839,15 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
+    backgroundColor: "#FF9A56",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 8,
+  },
+  userInitial: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
   },
   userName: {
     color: THEME.text,
@@ -881,7 +881,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   activeTabText: {
-    color: THEME.primary,
+    color: "#FF8A9B",
   },
   tabContent: {
     paddingHorizontal: 20,
@@ -939,7 +939,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   previewLabel: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 12,
   },
   previewBubble: {
@@ -1023,13 +1023,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   uploadText: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 14,
     fontWeight: "600",
     marginTop: 8,
   },
   uploadSubtext: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.6)",
     fontSize: 12,
     marginTop: 4,
   },
@@ -1102,7 +1102,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   faqAnswer: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 12,
     lineHeight: 16,
   },
@@ -1111,16 +1111,13 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   emptyText: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.8)",
     fontSize: 16,
     marginBottom: 4,
   },
   emptySubtext: {
-    color: THEME.textLight,
+    color: "rgba(255,255,255,0.6)",
     fontSize: 12,
-  },
-  modalContainer: {
-    flex: 1,
   },
   modalHeader: {
     flexDirection: "row",
