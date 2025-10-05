@@ -1,4 +1,3 @@
-"use client"
 
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert } from "react-native"
 import { Phone, PhoneCall, PhoneOff } from "lucide-react-native"

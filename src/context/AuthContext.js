@@ -1,7 +1,7 @@
-"use client"
-
 import { createContext, useState, useContext, useEffect } from "react"
-import AsyncStorage from "@react-native-async-storage/async-storage"
+import { secureStorage, storeUserToken, getUserToken, removeUserToken, storeUserData, getUserData, removeUserData } from "../utils/secureStorage"
+import { apiService, ApiError } from "../services/apiService"
+import { validateLoginForm, validateRegistrationForm } from "../utils/validation"
 
 const AuthContext = createContext(undefined)
 
@@ -14,8 +14,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const existingToken = await AsyncStorage.getItem("userToken")
-        const existingUser = await AsyncStorage.getItem("userData")
+        const existingToken = await getUserToken()
+        const existingUser = await getUserData()
 
         if (existingToken && existingUser) {
           // Validate token with backend before setting it
@@ -23,19 +23,22 @@ export const AuthProvider = ({ children }) => {
 
           if (isValid) {
             setToken(existingToken)
-            setUser(JSON.parse(existingUser))
-            console.log("🔄 Valid token found, user logged in")
+            setUser(existingUser)
+            if (__DEV__) console.log("🔄 Valid token found, user logged in")
           } else {
             // Token is invalid, clear it
-            await AsyncStorage.removeItem("userToken")
-            await AsyncStorage.removeItem("userData")
-            console.log("🔒 Invalid token removed, user needs to login")
+            await removeUserToken()
+            await removeUserData()
+            if (__DEV__) console.log("🔒 Invalid token removed, user needs to login")
           }
         } else {
-          console.log("🔓 No token found, user needs to login")
+          if (__DEV__) console.log("🔓 No token found, user needs to login")
         }
       } catch (e) {
         console.error("Failed to initialize auth:", e)
+        // Clear potentially corrupted data
+        await removeUserToken()
+        await removeUserData()
       } finally {
         setIsLoading(false)
       }
@@ -47,16 +50,14 @@ export const AuthProvider = ({ children }) => {
   // Validate token with backend
   const validateToken = async (token) => {
     try {
-      const response = await fetch("http://192.168.10.3:5000/api/auth/validate", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-      return response.ok
+      const result = await apiService.validateToken()
+      return result.success
     } catch (error) {
-      console.error("Token validation failed:", error)
+      if (error instanceof ApiError) {
+        console.error("Token validation failed:", error.message)
+      } else {
+        console.error("Token validation error:", error)
+      }
       return false
     }
   }
@@ -66,35 +67,41 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoading(true)
 
-      console.log("🔐 Attempting login with:", email)
+      // Validate input
+      const validation = validateLoginForm({ email, password })
+      if (!validation.isValid) {
+        const firstError = Object.values(validation.errors)[0]
+        return { success: false, error: firstError }
+      }
 
-      const response = await fetch("http://192.168.10.3:5000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      })
+      if (__DEV__) console.log("🔐 Attempting login with:", email)
 
-      const data = await response.json()
+      const result = await apiService.login(validation.data.email, validation.data.password)
 
-      if (response.ok && data.token) {
-        // Store real token and user data
-        await AsyncStorage.setItem("userToken", data.token)
-        await AsyncStorage.setItem("userData", JSON.stringify(data.user))
+      if (result.success && result.data.token) {
+        // Store encrypted token and user data
+        await storeUserToken(result.data.token)
+        await storeUserData(result.data.user)
 
-        setToken(data.token)
-        setUser(data.user)
+        setToken(result.data.token)
+        setUser(result.data.user)
 
-        console.log("✅ Login successful!")
+        if (__DEV__) console.log("✅ Login successful!")
         return { success: true }
       } else {
-        console.error("❌ Login failed:", data.message)
-        return { success: false, error: data.message || "Login failed" }
+        const errorMessage = result.data?.message || "Login failed"
+        if (__DEV__) console.error("❌ Login failed:", errorMessage)
+        return { success: false, error: errorMessage }
       }
     } catch (error) {
-      console.error("❌ Login error:", error)
-      return { success: false, error: "Network error. Please check your connection." }
+      if (error instanceof ApiError) {
+        const errorMessage = error.data?.message || error.message || "Login failed"
+        if (__DEV__) console.error("❌ Login error:", errorMessage)
+        return { success: false, error: errorMessage }
+      } else {
+        if (__DEV__) console.error("❌ Login error:", error)
+        return { success: false, error: "Network error. Please check your connection." }
+      }
     } finally {
       setIsLoading(false)
     }
@@ -105,35 +112,41 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoading(true)
 
-      console.log("📝 Attempting registration with:", email)
+      // Validate input
+      const validation = validateRegistrationForm({ name, email, password })
+      if (!validation.isValid) {
+        const firstError = Object.values(validation.errors)[0]
+        return { success: false, error: firstError }
+      }
 
-      const response = await fetch("http://192.168.10.3:5000/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, password }),
-      })
+      if (__DEV__) console.log("📝 Attempting registration with:", email)
 
-      const data = await response.json()
+      const result = await apiService.register(validation.data.name, validation.data.email, validation.data.password)
 
-      if (response.ok && data.token) {
-        // Store token and user data after successful registration
-        await AsyncStorage.setItem("userToken", data.token)
-        await AsyncStorage.setItem("userData", JSON.stringify(data.user))
+      if (result.success && result.data.token) {
+        // Store encrypted token and user data after successful registration
+        await storeUserToken(result.data.token)
+        await storeUserData(result.data.user)
 
-        setToken(data.token)
-        setUser(data.user)
+        setToken(result.data.token)
+        setUser(result.data.user)
 
-        console.log("✅ Registration successful!")
+        if (__DEV__) console.log("✅ Registration successful!")
         return { success: true }
       } else {
-        console.error("❌ Registration failed:", data.message)
-        return { success: false, error: data.message || "Registration failed" }
+        const errorMessage = result.data?.message || "Registration failed"
+        if (__DEV__) console.error("❌ Registration failed:", errorMessage)
+        return { success: false, error: errorMessage }
       }
     } catch (error) {
-      console.error("❌ Registration error:", error)
-      return { success: false, error: "Network error. Please check your connection." }
+      if (error instanceof ApiError) {
+        const errorMessage = error.data?.message || error.message || "Registration failed"
+        if (__DEV__) console.error("❌ Registration error:", errorMessage)
+        return { success: false, error: errorMessage }
+      } else {
+        if (__DEV__) console.error("❌ Registration error:", error)
+        return { success: false, error: "Network error. Please check your connection." }
+      }
     } finally {
       setIsLoading(false)
     }
@@ -142,11 +155,11 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem("userToken")
-      await AsyncStorage.removeItem("userData")
+      await removeUserToken()
+      await removeUserData()
       setToken(null)
       setUser(null)
-      console.log("🔒 Logged out successfully.")
+      if (__DEV__) console.log("🔒 Logged out successfully.")
     } catch (e) {
       console.error("Failed to logout:", e)
     }

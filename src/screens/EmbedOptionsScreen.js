@@ -1,4 +1,3 @@
-"use client"
 import { useState } from "react"
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Alert, Dimensions, Image, StatusBar } from "react-native"
 import { Picker } from "@react-native-picker/picker"

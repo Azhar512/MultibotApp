@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import {
   View,
@@ -14,6 +12,8 @@ import {
   ScrollView,
 } from "react-native"
 import { useAuth } from "../context/AuthContext"
+import { validateLoginForm, validateRegistrationForm } from "../utils/validation"
+import { getAccessibilityProps } from "../utils/accessibility"
 
 const AuthScreen = () => {
   const [isLogin, setIsLogin] = useState(true)
@@ -35,34 +35,21 @@ const AuthScreen = () => {
   }
 
   const validateForm = () => {
-    const { name, email, password, confirmPassword } = formData
-
-    if (!email || !password) {
-      Alert.alert("Error", "Please fill in all required fields")
-      return false
+    if (isLogin) {
+      const validation = validateLoginForm({ email: formData.email, password: formData.password })
+      if (!validation.isValid) {
+        const firstError = Object.values(validation.errors)[0]
+        Alert.alert("Error", firstError)
+        return false
+      }
+    } else {
+      const validation = validateRegistrationForm(formData)
+      if (!validation.isValid) {
+        const firstError = Object.values(validation.errors)[0]
+        Alert.alert("Error", firstError)
+        return false
+      }
     }
-
-    if (!isLogin && !name) {
-      Alert.alert("Error", "Please enter your name")
-      return false
-    }
-
-    if (!isLogin && password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match")
-      return false
-    }
-
-    if (password.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters long")
-      return false
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      Alert.alert("Error", "Please enter a valid email address")
-      return false
-    }
-
     return true
   }
 
@@ -121,6 +108,10 @@ const AuthScreen = () => {
               autoCapitalize="none"
               autoCorrect={false}
               editable={!isLoading}
+              {...getAccessibilityProps('textInput', {
+                accessibilityLabel: 'Email address',
+                accessibilityHint: 'Enter your email address',
+              })}
             />
 
             <TextInput
@@ -130,6 +121,10 @@ const AuthScreen = () => {
               onChangeText={(value) => handleInputChange("password", value)}
               secureTextEntry
               editable={!isLoading}
+              {...getAccessibilityProps('textInput', {
+                accessibilityLabel: 'Password',
+                accessibilityHint: 'Enter your password',
+              })}
             />
 
             {!isLogin && (
@@ -147,6 +142,10 @@ const AuthScreen = () => {
               style={[styles.button, isLoading && styles.buttonDisabled]}
               onPress={handleSubmit}
               disabled={isLoading}
+              {...getAccessibilityProps('button', {
+                accessibilityLabel: isLogin ? 'Sign in to your account' : 'Create new account',
+                accessibilityHint: 'Double tap to submit the form',
+              })}
             >
               {isLoading ? (
                 <ActivityIndicator color="#fff" />
