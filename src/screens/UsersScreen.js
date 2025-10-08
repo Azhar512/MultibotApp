@@ -20,7 +20,7 @@ import GradientView from "../components/GradientView"
 const { width } = Dimensions.get("window")
 
 // Mock API functions (replace with actual API calls)
-const API_BASE_URL = "http://localhost:5000/api"
+const API_BASE_URL = "http://168.231.114.68:5000/api"
 
 const UsersScreen = () => {
   // State management

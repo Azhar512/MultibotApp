@@ -59,7 +59,7 @@ const DashboardScreen = ({ navigation }) => {
     // WebSocket connection for real-time updates
     let ws
     try {
-      ws = new WebSocket("ws://localhost:5000")
+      ws = new WebSocket("ws://168.231.114.68:5000")
       ws.onmessage = (event) => {
         const newData = JSON.parse(event.data)
         if (newData.type === "statsUpdate") {

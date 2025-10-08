@@ -176,7 +176,7 @@ const BotInteractionScreen = ({ navigation }) => {
   const checkApiConnection = async () => {
     try {
       const token = await getAuthToken()
-      const response = await fetch("http://192.168.10.3:5000/api/health", {
+      const response = await fetch("http://168.231.114.68:5000/api/health", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -202,7 +202,7 @@ const BotInteractionScreen = ({ navigation }) => {
   const initializeTwilio = async () => {
     try {
       const token = await getAuthToken()
-      const response = await fetch("http://192.168.10.2:5000/api/twilio/token", {
+      const response = await fetch("http://168.231.114.68:5000/api/twilio/token", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -275,7 +275,7 @@ const BotInteractionScreen = ({ navigation }) => {
       payload.model = selectedModel
     }
 
-    const response = await fetch(`http://192.168.10.2:5000/api${endpoint}`, {
+    const response = await fetch(`http://168.231.114.68:5000/api${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -362,7 +362,7 @@ const BotInteractionScreen = ({ navigation }) => {
           }
 
           setCallStatus("connecting")
-          const response = await fetch("http://192.168.10.2:5000/api/twilio/call/start", {
+          const response = await fetch("http://168.231.114.68:5000/api/twilio/initiate-call", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -387,7 +387,7 @@ const BotInteractionScreen = ({ navigation }) => {
 
         case "end":
           setCallStatus("ending")
-          await fetch("http://192.168.10.2:5000/api/twilio/call/end", {
+          await fetch("http://168.231.114.68:5000/api/twilio/end-call", {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
