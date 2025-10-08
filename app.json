@@ -7,6 +7,21 @@
     },
     "android": {
       "package": "com.azhar512.tempappworking"
+    },
+    "ios": {
+      "bundleIdentifier": "com.azhar512.tempappworking",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSExceptionDomains": {
+            "168.231.114.68": {
+              "NSExceptionAllowsInsecureHTTPLoads": true,
+              "NSExceptionMinimumTLSVersion": "1.0",
+              "NSIncludesSubdomains": true
+            }
+          }
+        }
+      }
     }
   }
 }
