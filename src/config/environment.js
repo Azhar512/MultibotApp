@@ -4,15 +4,15 @@ const isDevelopment = __DEV__
 // API Configuration
 const API_CONFIG = {
   development: {
-    API_BASE_URL: 'http://localhost:3000/api',
-    TWILIO_API_URL: 'http://localhost:3001/api',
+    API_BASE_URL: 'http://168.231.114.68:5000/api',
+    TWILIO_API_URL: 'http://168.231.114.68:5000/api',
     API_TIMEOUT: 10000,
     RETRY_ATTEMPTS: 3,
     RETRY_DELAY: 1000,
   },
   production: {
-    API_BASE_URL: 'https://your-api-domain.com/api',
-    TWILIO_API_URL: 'https://your-twilio-api-domain.com/api',
+    API_BASE_URL: 'http://168.231.114.68:5000/api',
+    TWILIO_API_URL: 'http://168.231.114.68:5000/api',
     API_TIMEOUT: 15000,
     RETRY_ATTEMPTS: 3,
     RETRY_DELAY: 2000,
@@ -22,32 +22,32 @@ const API_CONFIG = {
 // Get current environment config
 const config = isDevelopment ? API_CONFIG.development : API_CONFIG.production
 
-// API Endpoints
+// API Endpoints - Updated to match backend routes
 export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
-    VALIDATE: '/auth/validate',
-    REFRESH: '/auth/refresh',
+    VALIDATE: '/auth/me',
+    REFRESH: '/auth/refresh-token',
     LOGOUT: '/auth/logout',
   },
   BOT: {
     CHAT: '/bot/chat',
-    DEEPSEEK: '/bot/deepseek',
-    OPENAI: '/bot/openai',
-    BERT: '/bot/bert',
+    DEEPSEEK: '/deepseek/response',
+    OPENAI: '/openai/response',
+    BERT: '/bert/response',
     PERSONALITY: '/bot/personality',
   },
   TWILIO: {
     TOKEN: '/twilio/token',
-    CALL_START: '/twilio/call/start',
-    CALL_END: '/twilio/call/end',
-    CALL_STATUS: '/twilio/call/status',
+    CALL_START: '/twilio/initiate-call',
+    CALL_END: '/twilio/end-call',
+    CALL_STATUS: '/twilio/call-status',
   },
   DASHBOARD: {
     STATS: '/dashboard/stats',
-    TRENDS: '/dashboard/trends',
-    PERSONALITY: '/dashboard/personality',
+    TRENDS: '/dashboard/interaction-trends',
+    PERSONALITY: '/dashboard/personality-effectiveness',
     INTERACTIONS: '/dashboard/interactions',
   },
   USERS: {

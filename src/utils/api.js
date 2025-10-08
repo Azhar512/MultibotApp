@@ -1,5 +1,5 @@
-// Change this line to use the correct IP from your server console
-const BASE_BACKEND_URL = "http://192.168.10.3:5000/api"
+// Updated to use your server IP
+const BASE_BACKEND_URL = "http://168.231.114.68:5000/api"
 
 export const callApi = async (endpoint, method, body, token) => {
   const headers = {
