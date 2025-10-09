@@ -297,6 +297,12 @@ const BotInteractionScreen = ({ navigation }) => {
       return
     }
 
+    // Check if API is connected before attempting to send
+    if (!apiStatus.isConnected) {
+      setError("API connection is unavailable. Please check your connection and try again.")
+      return
+    }
+
     const newMessage = {
       id: Date.now(),
       text,
@@ -484,6 +490,10 @@ const BotInteractionScreen = ({ navigation }) => {
           placeholderTextColor="rgba(255,255,255,0.6)"
           keyboardType="phone-pad"
           maxLength={15}
+          textContentType="telephoneNumber"
+          autoCorrect={false}
+          autoCapitalize="none"
+          returnKeyType="done"
         />
         {phoneNumber.length > 0 && (
           <TouchableOpacity style={styles.backspaceButton} onPress={handleBackspace}>
@@ -718,11 +728,16 @@ const BotInteractionScreen = ({ navigation }) => {
           style={styles.messageInput}
           value={currentMessage}
           onChangeText={setCurrentMessage}
-          placeholder="Type your message..."
+          placeholder={apiStatus.isConnected ? "Type your message..." : "Type your message... (API disconnected)"}
           placeholderTextColor="#999"
-          editable={!isLoading && apiStatus.isConnected}
+          editable={!isLoading}
           multiline
           maxLength={500}
+          textContentType="none"
+          autoCorrect={true}
+          autoCapitalize="sentences"
+          returnKeyType="default"
+          blurOnSubmit={false}
         />
 
         {botConfig.enableVoice && (
@@ -738,7 +753,7 @@ const BotInteractionScreen = ({ navigation }) => {
         <TouchableOpacity
           style={[styles.sendButton, (!currentMessage.trim() || isLoading) && styles.disabledButton]}
           onPress={() => handleMessageSubmit(currentMessage)}
-          disabled={!currentMessage.trim() || isLoading || !apiStatus.isConnected}
+          disabled={!currentMessage.trim() || isLoading}
         >
           <GradientView colors={[THEME.primary, THEME.secondary]} style={styles.sendButtonGradient}>
             <Send size={20} color="white" />
