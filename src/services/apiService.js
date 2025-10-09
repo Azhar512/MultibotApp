@@ -1,5 +1,5 @@
 import { config, API_ENDPOINTS } from '../config/environment'
-import { secureStorage } from '../utils/secureStorage'
+import secureStorage from '../utils/secureStorage'
 
 class ApiService {
   constructor() {

@@ -1,5 +1,5 @@
-import { config, API_ENDPOINTS } from '../config/environment'
-import { secureStorage } from '../utils/secureStorage'
+import { config } from '../config/environment'
+import secureStorage from '../utils/secureStorage'
 
 class HuggingFaceService {
   constructor() {
@@ -15,6 +15,13 @@ class HuggingFaceService {
       
       if (!this.apiKey) {
         console.warn('HuggingFace API key not found in storage')
+        return false
+      }
+      
+      // Test the API key with a simple request
+      const testResult = await this.testConnection()
+      if (!testResult.success) {
+        console.warn('HuggingFace API key is invalid or expired')
         return false
       }
       

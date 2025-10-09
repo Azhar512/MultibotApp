@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect } from "react"
-import { secureStorage, storeUserToken, getUserToken, removeUserToken, storeUserData, getUserData, removeUserData } from "../utils/secureStorage"
+import secureStorage from "../utils/secureStorage"
 import { apiService, ApiError } from "../services/apiService"
 import { validateLoginForm, validateRegistrationForm } from "../utils/validation"
 
@@ -14,8 +14,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const existingToken = await getUserToken()
-        const existingUser = await getUserData()
+        const existingToken = await secureStorage.getItem('userToken')
+        const existingUser = await secureStorage.getItem('userData')
 
         if (existingToken && existingUser) {
           // Validate token with backend before setting it
@@ -23,12 +23,12 @@ export const AuthProvider = ({ children }) => {
 
           if (isValid) {
             setToken(existingToken)
-            setUser(existingUser)
+            setUser(JSON.parse(existingUser))
             if (__DEV__) console.log("🔄 Valid token found, user logged in")
           } else {
             // Token is invalid, clear it
-            await removeUserToken()
-            await removeUserData()
+            await secureStorage.removeItem('userToken')
+            await secureStorage.removeItem('userData')
             if (__DEV__) console.log("🔒 Invalid token removed, user needs to login")
           }
         } else {
@@ -37,8 +37,8 @@ export const AuthProvider = ({ children }) => {
       } catch (e) {
         console.error("Failed to initialize auth:", e)
         // Clear potentially corrupted data
-        await removeUserToken()
-        await removeUserData()
+        await secureStorage.removeItem('userToken')
+        await secureStorage.removeItem('userData')
       } finally {
         setIsLoading(false)
       }
@@ -80,8 +80,8 @@ export const AuthProvider = ({ children }) => {
 
       if (result.success && result.data.token) {
         // Store encrypted token and user data
-        await storeUserToken(result.data.token)
-        await storeUserData(result.data.user)
+        await secureStorage.setItem('userToken', result.data.token)
+        await secureStorage.setItem('userData', JSON.stringify(result.data.user))
 
         setToken(result.data.token)
         setUser(result.data.user)
@@ -125,8 +125,8 @@ export const AuthProvider = ({ children }) => {
 
       if (result.success && result.data.token) {
         // Store encrypted token and user data after successful registration
-        await storeUserToken(result.data.token)
-        await storeUserData(result.data.user)
+        await secureStorage.setItem('userToken', result.data.token)
+        await secureStorage.setItem('userData', JSON.stringify(result.data.user))
 
         setToken(result.data.token)
         setUser(result.data.user)
@@ -155,8 +155,8 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = async () => {
     try {
-      await removeUserToken()
-      await removeUserData()
+      await secureStorage.removeItem('userToken')
+      await secureStorage.removeItem('userData')
       setToken(null)
       setUser(null)
       if (__DEV__) console.log("🔒 Logged out successfully.")

@@ -224,7 +224,8 @@ const BotInteractionScreen = ({ navigation }) => {
 
   const checkHuggingFaceStatus = async () => {
     try {
-      const { botAPI } = await import('../services/botService')
+      const botService = await import('../services/botService')
+      const { botAPI } = botService
       const result = await botAPI.testHuggingFaceConnection()
       
       if (result.success) {
@@ -280,7 +281,8 @@ const BotInteractionScreen = ({ navigation }) => {
     
     try {
       // Import the bot service
-      const { botAPI } = await import('../services/botService')
+      const botService = await import('../services/botService')
+      const { botAPI } = botService
       
       let result
       

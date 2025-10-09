@@ -12,7 +12,6 @@ import {
 import { Bot, Key, TestTube, CheckCircle, XCircle } from 'lucide-react-native'
 import GradientView from '../components/GradientView'
 import { THEME } from '../styles/globalStyles'
-import { botAPI } from '../services/botService'
 
 const HuggingFaceSettingsScreen = ({ navigation }) => {
   const [apiKey, setApiKey] = useState('')
@@ -27,6 +26,8 @@ const HuggingFaceSettingsScreen = ({ navigation }) => {
   const loadSettings = async () => {
     try {
       // Load available models
+      const botService = await import('../services/botService')
+      const { botAPI } = botService
       const models = botAPI.getAvailableModels()
       setAvailableModels(models)
     } catch (error) {
@@ -42,6 +43,8 @@ const HuggingFaceSettingsScreen = ({ navigation }) => {
 
     setIsLoading(true)
     try {
+      const botService = await import('../services/botService')
+      const { botAPI } = botService
       const success = await botAPI.setHuggingFaceApiKey(apiKey.trim())
       
       if (success) {
@@ -67,6 +70,9 @@ const HuggingFaceSettingsScreen = ({ navigation }) => {
     setConnectionStatus({ type: 'testing', message: 'Testing connection...' })
 
     try {
+      const botService = await import('../services/botService')
+      const { botAPI } = botService
+      
       // Save the API key first
       await botAPI.setHuggingFaceApiKey(apiKey.trim())
       
