@@ -28,6 +28,7 @@ const EmbedOptionsScreen = ({ navigation }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("embed-options")
   const [customization, setCustomization] = useState({
+    apiKey: "",
     theme: "dark",
     width: "380",
     height: "600",
@@ -35,6 +36,8 @@ const EmbedOptionsScreen = ({ navigation }) => {
     primaryColor: "#3b82f6",
     secondaryColor: "#1e40af",
     avatar: null,
+    welcomeMessage: "Hello! I'm your AI assistant. How can I help you today?",
+    autoOpen: "false",
   })
   const [showCopied, setShowCopied] = useState(false)
   const [searchText, setSearchText] = useState("")
@@ -53,14 +56,15 @@ const EmbedOptionsScreen = ({ navigation }) => {
   ]
 
   const tabs = [
-    { id: "embed-options", label: "Embed Options" },
+    { id: "embed-options", label: "Widget Setup" },
     { id: "features", label: "Features" },
     { id: "pricing", label: "Pricing" },
+    { id: "analytics", label: "Analytics" },
   ]
 
   const navItems = [
     { icon: Menu, label: "Dashboard", screen: "Dashboard" },
-    { icon: Copy, label: "Embed Options", screen: "EmbedOptions" },
+    { icon: Copy, label: "CallSync Widget", screen: "EmbedOptions" },
     { icon: Github, label: "Settings", screen: "Settings" },
   ]
 
@@ -95,17 +99,26 @@ const EmbedOptionsScreen = ({ navigation }) => {
   }
 
   const generateEmbedCode = () => {
-    return `<script>
-  window.embedConfig = {
+    return `<!-- CallSync AI Chat Widget -->
+<script>
+  window.callSyncConfig = {
+    apiKey: "your-api-key-here",
     theme: "${customization.theme}",
     width: "${customization.width}px",
     height: "${customization.height}px",
     position: "${customization.position}",
     primaryColor: "${customization.primaryColor}",
-    secondaryColor: "${customization.secondaryColor}"
+    secondaryColor: "${customization.secondaryColor}",
+    avatar: "${customization.avatar || 'default'}",
+    welcomeMessage: "Hello! I\'m your AI assistant. How can I help you today?",
+    enableTyping: true,
+    enableSound: true,
+    autoOpen: false,
+    language: "en"
   };
 </script>
-<script src="https://embed.example.com/widget.js"></script>`
+<script src="https://widget.callsync.ai/v1/embed.js" async></script>
+<!-- End CallSync Widget -->`
   }
 
   const copyToClipboard = async () => {
@@ -127,6 +140,7 @@ const EmbedOptionsScreen = ({ navigation }) => {
         style: "destructive",
         onPress: () => {
           setCustomization({
+            apiKey: "",
             theme: "dark",
             width: "380",
             height: "600",
@@ -134,6 +148,8 @@ const EmbedOptionsScreen = ({ navigation }) => {
             primaryColor: "#3b82f6",
             secondaryColor: "#1e40af",
             avatar: null,
+            welcomeMessage: "Hello! I'm your AI assistant. How can I help you today?",
+            autoOpen: "false",
           })
         },
       },
@@ -170,10 +186,25 @@ const EmbedOptionsScreen = ({ navigation }) => {
 
   const renderHeroSection = () => (
     <View style={styles.heroSection}>
-      <Text style={styles.heroTitle}>EmbedOptions</Text>
+      <Text style={styles.heroTitle}>CallSync</Text>
       <Text style={styles.heroSubtitle}>
-        Customize and embed your chat interface seamlessly with our beautiful gradient theme.
+        Create powerful, customizable AI chat widgets that seamlessly integrate with your website. 
+        Boost customer engagement with intelligent conversations.
       </Text>
+      <View style={styles.heroStats}>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>10K+</Text>
+          <Text style={styles.statLabel}>Active Users</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>99.9%</Text>
+          <Text style={styles.statLabel}>Uptime</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>24/7</Text>
+          <Text style={styles.statLabel}>Support</Text>
+        </View>
+      </View>
     </View>
   )
 
@@ -195,8 +226,24 @@ const EmbedOptionsScreen = ({ navigation }) => {
 
   const renderCustomizationForm = () => (
     <Card isSettingsCard>
-      <Text style={styles.sectionTitle}>Customize Your Chat Widget</Text>
+      <Text style={styles.sectionTitle}>Configure Your CallSync Widget</Text>
+      <Text style={styles.sectionSubtitle}>
+        Customize the appearance and behavior of your AI chat widget
+      </Text>
       <View style={styles.formGrid}>
+        {/* API Key */}
+        <View style={styles.formField}>
+          <Text style={styles.fieldLabel}>API Key *</Text>
+          <TextInput
+            style={styles.textInput}
+            value={customization.apiKey || ""}
+            onChangeText={(value) => handleCustomizationChange("apiKey", value)}
+            placeholder="Enter your CallSync API key"
+            placeholderTextColor="rgba(255,255,255,0.6)"
+            secureTextEntry={true}
+          />
+          <Text style={styles.fieldHelp}>Get your API key from the CallSync dashboard</Text>
+        </View>
         {/* Theme Selection */}
         <View style={styles.formField}>
           <Text style={styles.fieldLabel}>Theme</Text>
@@ -213,44 +260,61 @@ const EmbedOptionsScreen = ({ navigation }) => {
             </Picker>
           </View>
         </View>
-        {/* Width */}
-        <View style={styles.formField}>
-          <Text style={styles.fieldLabel}>Width (px)</Text>
-          <TextInput
-            style={styles.textInput}
-            value={customization.width}
-            onChangeText={(value) => handleCustomizationChange("width", value)}
-            keyboardType="numeric"
-            placeholder="380"
-            placeholderTextColor="rgba(255,255,255,0.6)"
-          />
+        {/* Dimensions */}
+        <View style={styles.dimensionsRow}>
+          <View style={[styles.formField, styles.halfField]}>
+            <Text style={styles.fieldLabel}>Width (px)</Text>
+            <TextInput
+              style={styles.textInput}
+              value={customization.width}
+              onChangeText={(value) => handleCustomizationChange("width", value)}
+              keyboardType="numeric"
+              placeholder="380"
+              placeholderTextColor="rgba(255,255,255,0.6)"
+            />
+          </View>
+          <View style={[styles.formField, styles.halfField]}>
+            <Text style={styles.fieldLabel}>Height (px)</Text>
+            <TextInput
+              style={styles.textInput}
+              value={customization.height}
+              onChangeText={(value) => handleCustomizationChange("height", value)}
+              keyboardType="numeric"
+              placeholder="600"
+              placeholderTextColor="rgba(255,255,255,0.6)"
+            />
+          </View>
         </View>
-        {/* Height */}
-        <View style={styles.formField}>
-          <Text style={styles.fieldLabel}>Height (px)</Text>
-          <TextInput
-            style={styles.textInput}
-            value={customization.height}
-            onChangeText={(value) => handleCustomizationChange("height", value)}
-            keyboardType="numeric"
-            placeholder="600"
-            placeholderTextColor="rgba(255,255,255,0.6)"
-          />
-        </View>
-        {/* Position */}
-        <View style={styles.formField}>
-          <Text style={styles.fieldLabel}>Position</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={customization.position}
-              onValueChange={(value) => handleCustomizationChange("position", value)}
-              style={styles.picker}
-              dropdownIconColor={THEME.text}
-            >
-              {positions.map((position) => (
-                <Picker.Item key={position.value} label={position.label} value={position.value} color={THEME.text} />
-              ))}
-            </Picker>
+        {/* Position and Behavior */}
+        <View style={styles.dimensionsRow}>
+          <View style={[styles.formField, styles.halfField]}>
+            <Text style={styles.fieldLabel}>Position</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={customization.position}
+                onValueChange={(value) => handleCustomizationChange("position", value)}
+                style={styles.picker}
+                dropdownIconColor={THEME.text}
+              >
+                {positions.map((position) => (
+                  <Picker.Item key={position.value} label={position.label} value={position.value} color={THEME.text} />
+                ))}
+              </Picker>
+            </View>
+          </View>
+          <View style={[styles.formField, styles.halfField]}>
+            <Text style={styles.fieldLabel}>Auto Open</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={customization.autoOpen || "false"}
+                onValueChange={(value) => handleCustomizationChange("autoOpen", value)}
+                style={styles.picker}
+                dropdownIconColor={THEME.text}
+              >
+                <Picker.Item label="Disabled" value="false" color={THEME.text} />
+                <Picker.Item label="Enabled" value="true" color={THEME.text} />
+              </Picker>
+            </View>
           </View>
         </View>
       </View>
@@ -265,6 +329,19 @@ const EmbedOptionsScreen = ({ navigation }) => {
           label="Secondary Color"
           value={customization.secondaryColor}
           onValueChange={(value) => handleCustomizationChange("secondaryColor", value)}
+        />
+      </View>
+      {/* Welcome Message */}
+      <View style={styles.formField}>
+        <Text style={styles.fieldLabel}>Welcome Message</Text>
+        <TextInput
+          style={[styles.textInput, styles.textAreaInput]}
+          value={customization.welcomeMessage || ""}
+          onChangeText={(value) => handleCustomizationChange("welcomeMessage", value)}
+          placeholder="Hello! I'm your AI assistant. How can I help you today?"
+          placeholderTextColor="rgba(255,255,255,0.6)"
+          multiline
+          numberOfLines={3}
         />
       </View>
       {/* Avatar Upload */}
@@ -292,27 +369,67 @@ const EmbedOptionsScreen = ({ navigation }) => {
 
   const renderPreview = () => (
     <Card isSettingsCard>
-      <Text style={styles.sectionTitle}>Preview</Text>
+      <Text style={styles.sectionTitle}>Live Preview</Text>
+      <Text style={styles.sectionSubtitle}>See how your widget will look on your website</Text>
       <View style={styles.previewContainer}>
         <View
           style={[
             styles.previewWidget,
             {
               backgroundColor: customization.theme === "dark" ? "#1f2937" : "#ffffff",
+              width: Math.min(parseInt(customization.width) || 380, 300),
+              height: Math.min(parseInt(customization.height) || 600, 400),
             },
           ]}
         >
-          <View style={styles.previewMessage}>
-            {customization.avatar ? (
-              <Image source={{ uri: customization.avatar }} style={styles.previewAvatar} />
-            ) : (
-              <View style={styles.defaultAvatar}>
-                <Text style={styles.avatarEmoji}>🤖</Text>
-              </View>
-            )}
-            <View style={[styles.messageBubble, { backgroundColor: customization.primaryColor }]}>
-              <Text style={styles.messageText}>Hello! How can I help you today?</Text>
+          <View style={styles.previewHeader}>
+            <View style={styles.previewTitleContainer}>
+              {customization.avatar ? (
+                <Image source={{ uri: customization.avatar }} style={styles.previewAvatar} />
+              ) : (
+                <View style={styles.defaultAvatar}>
+                  <Text style={styles.avatarEmoji}>🤖</Text>
+                </View>
+              )}
+              <Text style={styles.previewTitle}>CallSync AI</Text>
             </View>
+            <View style={styles.previewStatus}>
+              <View style={styles.statusDot} />
+              <Text style={styles.statusText}>Online</Text>
+            </View>
+          </View>
+          <View style={styles.previewMessages}>
+            <View style={styles.previewMessage}>
+              {customization.avatar ? (
+                <Image source={{ uri: customization.avatar }} style={styles.previewAvatar} />
+              ) : (
+                <View style={styles.defaultAvatar}>
+                  <Text style={styles.avatarEmoji}>🤖</Text>
+                </View>
+              )}
+              <View style={[styles.messageBubble, { backgroundColor: customization.primaryColor }]}>
+                <Text style={styles.messageText}>{customization.welcomeMessage || "Hello! How can I help you today?"}</Text>
+              </View>
+            </View>
+            <View style={styles.previewMessage}>
+              <View style={styles.userAvatar}>
+                <Text style={styles.userInitial}>U</Text>
+              </View>
+              <View style={styles.userBubble}>
+                <Text style={styles.userMessageText}>Hi there!</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.previewInput}>
+            <TextInput
+              style={styles.previewInputField}
+              placeholder="Type your message..."
+              placeholderTextColor="rgba(0,0,0,0.5)"
+              editable={false}
+            />
+            <TouchableOpacity style={styles.previewSendButton}>
+              <Text style={styles.previewSendText}>→</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -321,7 +438,8 @@ const EmbedOptionsScreen = ({ navigation }) => {
 
   const renderEmbedCode = () => (
     <Card isSettingsCard>
-      <Text style={styles.sectionTitle}>Embed Code</Text>
+      <Text style={styles.sectionTitle}>Integration Code</Text>
+      <Text style={styles.sectionSubtitle}>Copy this code and paste it into your website's HTML</Text>
       <View style={styles.codeContainer}>
         <ScrollView style={styles.codeScrollView} showsVerticalScrollIndicator={false}>
           <Text style={styles.codeText}>{generateEmbedCode()}</Text>
@@ -329,6 +447,25 @@ const EmbedOptionsScreen = ({ navigation }) => {
         <TouchableOpacity style={styles.copyButton} onPress={copyToClipboard}>
           {showCopied ? <Text style={styles.copiedText}>Copied!</Text> : <Copy size={20} color={THEME.text} />}
         </TouchableOpacity>
+      </View>
+      <View style={styles.integrationSteps}>
+        <Text style={styles.stepsTitle}>Integration Steps:</Text>
+        <View style={styles.stepItem}>
+          <Text style={styles.stepNumber}>1</Text>
+          <Text style={styles.stepText}>Copy the code above</Text>
+        </View>
+        <View style={styles.stepItem}>
+          <Text style={styles.stepNumber}>2</Text>
+          <Text style={styles.stepText}>Paste it before the closing &lt;/body&gt; tag</Text>
+        </View>
+        <View style={styles.stepItem}>
+          <Text style={styles.stepNumber}>3</Text>
+          <Text style={styles.stepText}>Replace 'your-api-key-here' with your actual API key</Text>
+        </View>
+        <View style={styles.stepItem}>
+          <Text style={styles.stepNumber}>4</Text>
+          <Text style={styles.stepText}>Save and test your website</Text>
+        </View>
       </View>
     </Card>
   )
@@ -346,9 +483,9 @@ const EmbedOptionsScreen = ({ navigation }) => {
     <View style={styles.footer}>
       <View style={styles.footerContent}>
         <View style={styles.footerSection}>
-          <Text style={styles.footerTitle}>EmbedOptions</Text>
+          <Text style={styles.footerTitle}>CallSync</Text>
           <Text style={styles.footerDescription}>
-            Create beautiful, customizable chat widgets that seamlessly integrate with your website.
+            The most powerful AI chat widget platform. Boost customer engagement with intelligent conversations that convert.
           </Text>
           <View style={styles.socialLinks}>
             <TouchableOpacity style={styles.socialLink}>
@@ -399,7 +536,7 @@ const EmbedOptionsScreen = ({ navigation }) => {
         </View>
       </View>
       <View style={styles.footerBottom}>
-        <Text style={styles.copyright}>© 2024 EmbedOptions. All rights reserved.</Text>
+        <Text style={styles.copyright}>© 2024 CallSync. All rights reserved.</Text>
       </View>
     </View>
   )
@@ -420,24 +557,133 @@ const EmbedOptionsScreen = ({ navigation }) => {
               {renderActionButtons()}
             </View>
           )}
+          {activeTab === "analytics" && (
+            <View style={styles.mainContent}>
+              <Card isSettingsCard>
+                <Text style={styles.sectionTitle}>Analytics Dashboard</Text>
+                <Text style={styles.sectionSubtitle}>Track your widget performance and user engagement</Text>
+                <View style={styles.analyticsGrid}>
+                  <View style={styles.analyticsCard}>
+                    <Text style={styles.analyticsNumber}>1,247</Text>
+                    <Text style={styles.analyticsLabel}>Total Conversations</Text>
+                    <Text style={styles.analyticsChange}>+12% this week</Text>
+                  </View>
+                  <View style={styles.analyticsCard}>
+                    <Text style={styles.analyticsNumber}>89%</Text>
+                    <Text style={styles.analyticsLabel}>Satisfaction Rate</Text>
+                    <Text style={styles.analyticsChange}>+5% this week</Text>
+                  </View>
+                  <View style={styles.analyticsCard}>
+                    <Text style={styles.analyticsNumber}>2.3s</Text>
+                    <Text style={styles.analyticsLabel}>Avg Response Time</Text>
+                    <Text style={styles.analyticsChange}>-0.2s this week</Text>
+                  </View>
+                  <View style={styles.analyticsCard}>
+                    <Text style={styles.analyticsNumber}>156</Text>
+                    <Text style={styles.analyticsLabel}>Active Users</Text>
+                    <Text style={styles.analyticsChange}>+23 this week</Text>
+                  </View>
+                </View>
+              </Card>
+            </View>
+          )}
           {activeTab === "features" && (
-            <Card isSettingsCard>
-              <Text style={styles.sectionTitle}>Features</Text>
-              <Text style={styles.featureText}>
-                • Fully customizable themes and colors{"\n"}• Multiple positioning options{"\n"}• Custom avatar support
-                {"\n"}• Responsive design{"\n"}• Easy integration{"\n"}• Real-time preview
-              </Text>
-            </Card>
+            <View style={styles.mainContent}>
+              <Card isSettingsCard>
+                <Text style={styles.sectionTitle}>CallSync Features</Text>
+                <View style={styles.featuresGrid}>
+                  <View style={styles.featureCard}>
+                    <Text style={styles.featureIcon}>🤖</Text>
+                    <Text style={styles.featureTitle}>AI-Powered</Text>
+                    <Text style={styles.featureDescription}>Advanced AI that understands context and provides intelligent responses</Text>
+                  </View>
+                  <View style={styles.featureCard}>
+                    <Text style={styles.featureIcon}>🎨</Text>
+                    <Text style={styles.featureTitle}>Customizable</Text>
+                    <Text style={styles.featureDescription}>Fully customizable themes, colors, and positioning to match your brand</Text>
+                  </View>
+                  <View style={styles.featureCard}>
+                    <Text style={styles.featureIcon}>📊</Text>
+                    <Text style={styles.featureTitle}>Analytics</Text>
+                    <Text style={styles.featureDescription}>Track conversations, user engagement, and performance metrics</Text>
+                  </View>
+                  <View style={styles.featureCard}>
+                    <Text style={styles.featureIcon}>🔒</Text>
+                    <Text style={styles.featureTitle}>Secure</Text>
+                    <Text style={styles.featureDescription}>Enterprise-grade security with data encryption and privacy protection</Text>
+                  </View>
+                  <View style={styles.featureCard}>
+                    <Text style={styles.featureIcon}>⚡</Text>
+                    <Text style={styles.featureTitle}>Fast</Text>
+                    <Text style={styles.featureDescription}>Lightning-fast responses with optimized performance and caching</Text>
+                  </View>
+                  <View style={styles.featureCard}>
+                    <Text style={styles.featureIcon}>🌍</Text>
+                    <Text style={styles.featureTitle}>Multi-language</Text>
+                    <Text style={styles.featureDescription}>Support for 50+ languages with automatic translation capabilities</Text>
+                  </View>
+                </View>
+              </Card>
+            </View>
           )}
           {activeTab === "pricing" && (
-            <Card isSettingsCard>
-              <Text style={styles.sectionTitle}>Pricing</Text>
-              <Text style={styles.pricingText}>
-                Free tier: Up to 1,000 messages/month{"\n"}
-                Pro tier: Unlimited messages - $29/month{"\n"}
-                Enterprise: Custom solutions available
-              </Text>
-            </Card>
+            <View style={styles.mainContent}>
+              <Card isSettingsCard>
+                <Text style={styles.sectionTitle}>CallSync Pricing</Text>
+                <Text style={styles.sectionSubtitle}>Choose the perfect plan for your business needs</Text>
+                <View style={styles.pricingGrid}>
+                  <View style={styles.pricingCard}>
+                    <Text style={styles.pricingTitle}>Free</Text>
+                    <Text style={styles.pricingPrice}>$0<Text style={styles.pricingPeriod}>/month</Text></Text>
+                    <Text style={styles.pricingDescription}>Perfect for small websites and testing</Text>
+                    <View style={styles.pricingFeatures}>
+                      <Text style={styles.pricingFeature}>✓ Up to 1,000 messages/month</Text>
+                      <Text style={styles.pricingFeature}>✓ Basic customization</Text>
+                      <Text style={styles.pricingFeature}>✓ Email support</Text>
+                      <Text style={styles.pricingFeature}>✓ Standard AI models</Text>
+                    </View>
+                    <TouchableOpacity style={styles.pricingButton}>
+                      <Text style={styles.pricingButtonText}>Get Started</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={[styles.pricingCard, styles.pricingCardFeatured]}>
+                    <View style={styles.featuredBadge}>
+                      <Text style={styles.featuredText}>Most Popular</Text>
+                    </View>
+                    <Text style={styles.pricingTitle}>Pro</Text>
+                    <Text style={styles.pricingPrice}>$29<Text style={styles.pricingPeriod}>/month</Text></Text>
+                    <Text style={styles.pricingDescription}>Ideal for growing businesses</Text>
+                    <View style={styles.pricingFeatures}>
+                      <Text style={styles.pricingFeature}>✓ Unlimited messages</Text>
+                      <Text style={styles.pricingFeature}>✓ Advanced customization</Text>
+                      <Text style={styles.pricingFeature}>✓ Priority support</Text>
+                      <Text style={styles.pricingFeature}>✓ Premium AI models</Text>
+                      <Text style={styles.pricingFeature}>✓ Analytics dashboard</Text>
+                      <Text style={styles.pricingFeature}>✓ Custom branding</Text>
+                    </View>
+                    <TouchableOpacity style={[styles.pricingButton, styles.pricingButtonFeatured]}>
+                      <Text style={styles.pricingButtonText}>Start Free Trial</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.pricingCard}>
+                    <Text style={styles.pricingTitle}>Enterprise</Text>
+                    <Text style={styles.pricingPrice}>Custom</Text>
+                    <Text style={styles.pricingDescription}>For large organizations</Text>
+                    <View style={styles.pricingFeatures}>
+                      <Text style={styles.pricingFeature}>✓ Everything in Pro</Text>
+                      <Text style={styles.pricingFeature}>✓ Dedicated support</Text>
+                      <Text style={styles.pricingFeature}>✓ Custom integrations</Text>
+                      <Text style={styles.pricingFeature}>✓ SLA guarantee</Text>
+                      <Text style={styles.pricingFeature}>✓ On-premise deployment</Text>
+                      <Text style={styles.pricingFeature}>✓ Custom AI training</Text>
+                    </View>
+                    <TouchableOpacity style={styles.pricingButton}>
+                      <Text style={styles.pricingButtonText}>Contact Sales</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Card>
+            </View>
           )}
           {renderFooter()}
         </ScrollView>
@@ -831,6 +1077,318 @@ const styles = StyleSheet.create({
   copyright: {
     color: "rgba(255,255,255,0.6)",
     fontSize: 12,
+  },
+  // New styles for enhanced UI
+  heroStats: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 30,
+    paddingHorizontal: 20,
+  },
+  statItem: {
+    alignItems: "center",
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: THEME.text,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.8)",
+    textAlign: "center",
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.8)",
+    textAlign: "center",
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  fieldHelp: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.6)",
+    marginTop: 4,
+    fontStyle: "italic",
+  },
+  dimensionsRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  halfField: {
+    flex: 1,
+  },
+  textAreaInput: {
+    height: 80,
+    textAlignVertical: "top",
+  },
+  previewHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.1)",
+    marginBottom: 12,
+  },
+  previewTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  previewTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+  },
+  previewStatus: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#10B981",
+  },
+  statusText: {
+    fontSize: 12,
+    color: "#10B981",
+    fontWeight: "500",
+  },
+  previewMessages: {
+    flex: 1,
+    gap: 8,
+  },
+  userAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#3b82f6",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  userInitial: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  userBubble: {
+    backgroundColor: "#f3f4f6",
+    borderRadius: 12,
+    padding: 8,
+    maxWidth: "80%",
+  },
+  userMessageText: {
+    color: "#333",
+    fontSize: 12,
+  },
+  previewInput: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.1)",
+  },
+  previewInputField: {
+    flex: 1,
+    backgroundColor: "#f9fafb",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    fontSize: 12,
+    marginRight: 8,
+  },
+  previewSendButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#3b82f6",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  previewSendText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  integrationSteps: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 12,
+  },
+  stepsTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: THEME.text,
+    marginBottom: 12,
+  },
+  stepItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  stepNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: THEME.primary,
+    color: "white",
+    fontSize: 12,
+    fontWeight: "bold",
+    textAlign: "center",
+    lineHeight: 24,
+    marginRight: 12,
+  },
+  stepText: {
+    flex: 1,
+    fontSize: 14,
+    color: "rgba(255,255,255,0.9)",
+    lineHeight: 20,
+  },
+  featuresGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16,
+    marginTop: 20,
+  },
+  featureCard: {
+    width: "48%",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 12,
+    padding: 16,
+    alignItems: "center",
+  },
+  featureIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  featureTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: THEME.text,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  featureDescription: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.8)",
+    textAlign: "center",
+    lineHeight: 16,
+  },
+  pricingGrid: {
+    flexDirection: "row",
+    gap: 16,
+    marginTop: 20,
+  },
+  pricingCard: {
+    flex: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 16,
+    padding: 20,
+    alignItems: "center",
+    position: "relative",
+  },
+  pricingCardFeatured: {
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    borderWidth: 2,
+    borderColor: THEME.primary,
+  },
+  featuredBadge: {
+    position: "absolute",
+    top: -8,
+    backgroundColor: THEME.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  featuredText: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  pricingTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: THEME.text,
+    marginBottom: 8,
+  },
+  pricingPrice: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: THEME.text,
+    marginBottom: 4,
+  },
+  pricingPeriod: {
+    fontSize: 14,
+    fontWeight: "normal",
+    color: "rgba(255,255,255,0.8)",
+  },
+  pricingDescription: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.8)",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  pricingFeatures: {
+    width: "100%",
+    marginBottom: 20,
+  },
+  pricingFeature: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.9)",
+    marginBottom: 6,
+    lineHeight: 16,
+  },
+  pricingButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
+  },
+  pricingButtonFeatured: {
+    backgroundColor: THEME.primary,
+    borderColor: THEME.primary,
+  },
+  pricingButtonText: {
+    color: THEME.text,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  analyticsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16,
+    marginTop: 20,
+  },
+  analyticsCard: {
+    width: "48%",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 12,
+    padding: 16,
+    alignItems: "center",
+  },
+  analyticsNumber: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: THEME.text,
+    marginBottom: 4,
+  },
+  analyticsLabel: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.8)",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  analyticsChange: {
+    fontSize: 10,
+    color: "#10B981",
+    fontWeight: "500",
   },
 })
 
