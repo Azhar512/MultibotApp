@@ -13,6 +13,7 @@ import PersonalitySettingsScreen from '../screens/PersonalitySettingsScreen'
 import ScenarioPanelScreen from '../screens/ScenarioPanelScreen'
 import SettingsScreen from '../screens/SettingsScreen'
 import UsersScreen from '../screens/UsersScreen'
+import HuggingFaceSettingsScreen from '../screens/HuggingFaceSettingsScreen'
 
 const Stack = createStackNavigator()
 
@@ -96,6 +97,16 @@ const AppNavigator = () => {
               options={{
                 headerShown: true,
                 title: "Users Management",
+                headerStyle: { backgroundColor: "#667eea" },
+                headerTintColor: "#fff",
+              }}
+            />
+            <Stack.Screen
+              name="HuggingFaceSettings"
+              component={HuggingFaceSettingsScreen}
+              options={{
+                headerShown: true,
+                title: "HuggingFace Settings",
                 headerStyle: { backgroundColor: "#667eea" },
                 headerTintColor: "#fff",
               }}

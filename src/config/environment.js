@@ -6,14 +6,16 @@ const API_CONFIG = {
   development: {
     API_BASE_URL: 'http://168.231.114.68:5000/api',
     TWILIO_API_URL: 'http://168.231.114.68:5000/api',
-    API_TIMEOUT: 10000,
+    HUGGINGFACE_API_URL: 'https://api-inference.huggingface.co/models',
+    API_TIMEOUT: 15000,
     RETRY_ATTEMPTS: 3,
     RETRY_DELAY: 1000,
   },
   production: {
     API_BASE_URL: 'http://168.231.114.68:5000/api',
     TWILIO_API_URL: 'http://168.231.114.68:5000/api',
-    API_TIMEOUT: 15000,
+    HUGGINGFACE_API_URL: 'https://api-inference.huggingface.co/models',
+    API_TIMEOUT: 20000,
     RETRY_ATTEMPTS: 3,
     RETRY_DELAY: 2000,
   }
@@ -37,6 +39,12 @@ export const API_ENDPOINTS = {
     OPENAI: '/openai/response',
     BERT: '/bert/response',
     PERSONALITY: '/bot/personality',
+  },
+  HUGGINGFACE: {
+    TEXT_GENERATION: '/text-generation',
+    CONVERSATIONAL: '/conversational',
+    SUMMARIZATION: '/summarization',
+    QUESTION_ANSWERING: '/question-answering',
   },
   TWILIO: {
     TOKEN: '/twilio/token',

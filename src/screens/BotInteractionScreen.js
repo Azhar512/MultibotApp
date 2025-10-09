@@ -99,6 +99,7 @@ const BotInteractionScreen = ({ navigation }) => {
     { icon: Phone, label: "Scenario Panel", screen: "ScenarioPanel" },
     { icon: User, label: "Users", screen: "Users" },
     { icon: MessageSquare, label: "Settings", screen: "Settings" },
+    { icon: Bot, label: "HuggingFace Settings", screen: "HuggingFaceSettings" },
   ]
 
   // State Management
@@ -137,6 +138,7 @@ const BotInteractionScreen = ({ navigation }) => {
   const [phoneNumber, setPhoneNumber] = useState("")
   const [showDialpad, setShowDialpad] = useState(true)
   const [twilioStatus, setTwilioStatus] = useState("Ready")
+  const [huggingfaceStatus, setHuggingfaceStatus] = useState("Unknown")
 
   // Refs
   const scrollViewRef = useRef(null)
@@ -147,6 +149,7 @@ const BotInteractionScreen = ({ navigation }) => {
   useEffect(() => {
     checkAuthAndConnection()
     initializeTwilio()
+    checkHuggingFaceStatus()
   }, [])
 
   const getAuthToken = async () => {
@@ -219,6 +222,22 @@ const BotInteractionScreen = ({ navigation }) => {
     }
   }
 
+  const checkHuggingFaceStatus = async () => {
+    try {
+      const { botAPI } = await import('../services/botService')
+      const result = await botAPI.testHuggingFaceConnection()
+      
+      if (result.success) {
+        setHuggingfaceStatus("Ready")
+      } else {
+        setHuggingfaceStatus("Error")
+      }
+    } catch (error) {
+      console.error("HuggingFace status check failed:", error)
+      setHuggingfaceStatus("Error")
+    }
+  }
+
   const handleIndustryChange = (industry) => {
     setSelectedIndustry(industry)
     setPersonalitySettings(INDUSTRY_PRESETS[industry])
@@ -258,37 +277,86 @@ const BotInteractionScreen = ({ navigation }) => {
 
   const callBotAPI = async (text) => {
     const token = await getAuthToken()
-    let endpoint = "/bot/chat"
-    const payload = {
-      message: text,
-      personality: personalitySettings,
-      config: botConfig,
+    
+    try {
+      // Import the bot service
+      const { botAPI } = await import('../services/botService')
+      
+      let result
+      
+      if (selectedModel === "deepseek-r1") {
+        // Try backend first, then fallback
+        try {
+          const response = await fetch(`http://168.231.114.68:5000/api/bot/deepseek`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              message: text,
+              personality: personalitySettings,
+              config: botConfig,
+            }),
+          })
+          
+          if (response.ok) {
+            result = await response.json()
+          } else {
+            throw new Error(`Backend API Error: ${response.status}`)
+          }
+        } catch (error) {
+          console.warn('Backend DeepSeek API failed, using fallback:', error.message)
+          // Fallback to HuggingFace
+          result = await botAPI.sendMessage(text, personalitySettings, botConfig, token, 'microsoft/DialoGPT-large')
+        }
+      } else if (selectedModel === "gpt-4-turbo") {
+        // Try backend first, then fallback
+        try {
+          const response = await fetch(`http://168.231.114.68:5000/api/bot/openai`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              message: text,
+              personality: personalitySettings,
+              config: botConfig,
+              voiceType: selectedVoice,
+            }),
+          })
+          
+          if (response.ok) {
+            result = await response.json()
+          } else {
+            throw new Error(`Backend API Error: ${response.status}`)
+          }
+        } catch (error) {
+          console.warn('Backend OpenAI API failed, using fallback:', error.message)
+          // Fallback to HuggingFace
+          result = await botAPI.sendMessage(text, personalitySettings, botConfig, token, 'microsoft/DialoGPT-large')
+        }
+      } else {
+        // Use BERT service with fallback
+        result = await botAPI.sendBERTMessage(text, personalitySettings, botConfig, token, selectedModel)
+      }
+
+      // Handle the response format
+      if (result.success) {
+        return {
+          response: result.data?.response || result.response,
+          confidence: result.data?.confidence || result.confidence || 0.75,
+          model: result.data?.model || result.model || selectedModel,
+          timestamp: result.data?.timestamp || new Date().toISOString()
+        }
+      } else {
+        throw new Error(result.error || 'Unknown API error')
+      }
+    } catch (error) {
+      console.error('Bot API call failed:', error)
+      throw error
     }
-
-    if (selectedModel === "deepseek-r1") {
-      endpoint = "/bot/deepseek"
-    } else if (selectedModel === "gpt-4-turbo") {
-      endpoint = "/bot/openai"
-      payload.voiceType = selectedVoice
-    } else {
-      endpoint = "/bot/bert"
-      payload.model = selectedModel
-    }
-
-    const response = await fetch(`http://168.231.114.68:5000/api${endpoint}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    })
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`)
-    }
-
-    return await response.json()
   }
 
   const handleMessageSubmit = async (text) => {
@@ -776,6 +844,43 @@ const BotInteractionScreen = ({ navigation }) => {
               </Text>
             </View>
           )}
+
+          {/* HuggingFace Status */}
+          <View style={styles.statusCard}>
+            <Text style={styles.statusCardTitle}>Service Status</Text>
+            <View style={styles.statusRow}>
+              <Text style={styles.statusLabel}>Backend API:</Text>
+              <View style={styles.statusIndicator}>
+                <View style={[
+                  styles.statusDot, 
+                  { backgroundColor: apiStatus.isConnected ? "#10B981" : "#EF4444" }
+                ]} />
+                <Text style={styles.statusText}>
+                  {apiStatus.isConnected ? "Connected" : "Disconnected"}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.statusRow}>
+              <Text style={styles.statusLabel}>HuggingFace:</Text>
+              <View style={styles.statusIndicator}>
+                <View style={[
+                  styles.statusDot, 
+                  { backgroundColor: huggingfaceStatus === "Ready" ? "#10B981" : "#EF4444" }
+                ]} />
+                <Text style={styles.statusText}>
+                  {huggingfaceStatus === "Ready" ? "Ready" : "Not Configured"}
+                </Text>
+              </View>
+            </View>
+            {huggingfaceStatus !== "Ready" && (
+              <TouchableOpacity 
+                style={styles.configureButton}
+                onPress={() => navigation.navigate('HuggingFaceSettings')}
+              >
+                <Text style={styles.configureButtonText}>Configure HuggingFace API</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
           {renderModeTabs()}
 
@@ -1266,6 +1371,60 @@ callButtonText: {
     color: "#EF4444",
     fontSize: 14,
     textAlign: "center",
+  },
+  // Status Card Styles
+  statusCard: {
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  statusCardTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 15,
+  },
+  statusRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  statusLabel: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  statusIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  configureButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 10,
+    alignItems: "center",
+  },
+  configureButtonText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "600",
   },
 })
 
