@@ -25,6 +25,7 @@ import {
 import { THEME } from "../styles/globalStyles"
 import GradientView from "../components/GradientView"
 import Sidebar from "../components/Sidebar"
+import CallInterface from "../components/CallInterface"
 import { useAuth } from "../context/AuthContext"
 import { apiService } from "../services/apiService"
 
@@ -56,6 +57,10 @@ const BotInteractionScreen = ({ navigation }) => {
   const [mode, setMode] = useState("chat") // 'chat' or 'call'
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  
+  // Call states
+  const [callStatus, setCallStatus] = useState("idle") // 'idle', 'connecting', 'ringing', 'in-progress', 'ended'
+  const [callData, setCallData] = useState(null)
   
   const scrollViewRef = useRef(null)
 
@@ -129,6 +134,70 @@ const BotInteractionScreen = ({ navigation }) => {
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true })
   }, [messages])
+
+  // Call handler functions
+  const handleInitiateCall = async (phoneNumber) => {
+    if (!phoneNumber || !phoneNumber.trim()) {
+      Alert.alert("Error", "Please enter a valid phone number")
+      return
+    }
+
+    try {
+      setCallStatus("connecting")
+      
+      const result = await apiService.startCall(
+        phoneNumber,
+        personalitySettings,
+        {
+          model: selectedModel,
+          voiceType: "alloy",
+        }
+      )
+
+      if (result && result.success) {
+        setCallData({
+          to: phoneNumber,
+          from: "Your System",
+          callSid: result.data?.callSid || null,
+          direction: "outgoing",
+        })
+        setCallStatus("in-progress")
+        
+        Alert.alert("Success", "Call initiated successfully!")
+      } else {
+        throw new Error(result?.error || "Failed to initiate call")
+      }
+    } catch (error) {
+      console.error("Call Error:", error)
+      Alert.alert("Error", error.message || "Failed to initiate call")
+      setCallStatus("idle")
+    }
+  }
+
+  const handleAnswerCall = () => {
+    if (callStatus === "ringing") {
+      setCallStatus("in-progress")
+      Alert.alert("Call Answered", "You are now connected")
+    }
+  }
+
+  const handleEndCall = async () => {
+    try {
+      await apiService.endCall()
+      setCallStatus("ended")
+      
+      setTimeout(() => {
+        setCallStatus("idle")
+        setCallData(null)
+      }, 2000)
+      
+      Alert.alert("Call Ended", "The call has been disconnected")
+    } catch (error) {
+      console.error("End Call Error:", error)
+      setCallStatus("idle")
+      setCallData(null)
+    }
+  }
 
   const renderMessage = (message) => {
     const isBot = message.sender === "bot"
@@ -223,27 +292,6 @@ const BotInteractionScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Chat Area */}
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.chatArea}
-          contentContainerStyle={styles.chatContent}
-        >
-          {messages.length === 0 ? (
-            <View style={styles.emptyChat}>
-              <Bot size={64} color="rgba(255,255,255,0.3)" />
-              <Text style={styles.emptyText}>Start a conversation with the AI</Text>
-            </View>
-          ) : (
-            messages.map(renderMessage)
-          )}
-          {isLoading && (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>AI is typing...</Text>
-            </View>
-          )}
-        </ScrollView>
-
         {/* Mode Toggle */}
         <View style={styles.modeToggle}>
           <TouchableOpacity
@@ -262,20 +310,59 @@ const BotInteractionScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Input Bar */}
-        <View style={styles.inputBar}>
-          <TextInput
-            style={styles.input}
-            value={currentMessage}
-            onChangeText={setCurrentMessage}
-            placeholder="Type your message..."
-            placeholderTextColor="rgba(255,255,255,0.5)"
-            multiline
-          />
-          <TouchableOpacity onPress={sendMessage} style={styles.sendButton} disabled={isLoading}>
-            <Send size={24} color="white" />
-          </TouchableOpacity>
-        </View>
+        {/* Content Area - Chat or Call */}
+        {mode === "chat" ? (
+          <>
+            {/* Chat Area */}
+            <ScrollView
+              ref={scrollViewRef}
+              style={styles.chatArea}
+              contentContainerStyle={styles.chatContent}
+            >
+              {messages.length === 0 ? (
+                <View style={styles.emptyChat}>
+                  <Bot size={64} color="rgba(255,255,255,0.3)" />
+                  <Text style={styles.emptyText}>Start a conversation with the AI</Text>
+                </View>
+              ) : (
+                messages.map(renderMessage)
+              )}
+              {isLoading && (
+                <View style={styles.loadingContainer}>
+                  <Text style={styles.loadingText}>AI is typing...</Text>
+                </View>
+              )}
+            </ScrollView>
+
+            {/* Input Bar */}
+            <View style={styles.inputBar}>
+              <TextInput
+                style={styles.input}
+                value={currentMessage}
+                onChangeText={setCurrentMessage}
+                placeholder="Type your message..."
+                placeholderTextColor="rgba(255,255,255,0.5)"
+                multiline
+              />
+              <TouchableOpacity onPress={sendMessage} style={styles.sendButton} disabled={isLoading}>
+                <Send size={24} color="white" />
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          /* Call Interface */
+          <View style={styles.callArea}>
+            <CallInterface
+              callStatus={callStatus}
+              callData={callData}
+              onInitiateCall={handleInitiateCall}
+              onAnswerCall={handleAnswerCall}
+              onEndCall={handleEndCall}
+              personalitySettings={personalitySettings}
+              disabled={isLoading}
+            />
+          </View>
+        )}
 
         {/* Settings Modal */}
         {renderSettingsModal()}
@@ -490,6 +577,11 @@ const styles = StyleSheet.create({
   },
   picker: {
     color: "white",
+  },
+  callArea: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
   },
 })
 
