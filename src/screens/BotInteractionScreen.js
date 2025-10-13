@@ -25,6 +25,8 @@ import {
 import { THEME } from "../styles/globalStyles"
 import GradientView from "../components/GradientView"
 import Sidebar from "../components/Sidebar"
+import { useAuth } from "../context/AuthContext"
+import { apiService } from "../services/apiService"
 
 const { width, height } = Dimensions.get("window")
 
@@ -44,6 +46,7 @@ const AVAILABLE_MODELS = [
 ]
 
 const BotInteractionScreen = ({ navigation }) => {
+  const { token } = useAuth()
   const [messages, setMessages] = useState([])
   const [currentMessage, setCurrentMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -74,32 +77,50 @@ const BotInteractionScreen = ({ navigation }) => {
     }
 
     setMessages((prev) => [...prev, userMessage])
+    const messageToSend = currentMessage
     setCurrentMessage("")
     setIsLoading(true)
 
     try {
-      // Call your bot API here
-      const response = await fetch("http://168.231.114.68:5000/api/deepseek/response", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: currentMessage,
-          personality: personalitySettings,
-        }),
-      })
-
-      const data = await response.json()
+      let result
       
-      const botMessage = {
+      // Route to appropriate API based on selected model
+      if (selectedModel === 'deepseek-r1') {
+        result = await apiService.sendDeepSeekMessage(messageToSend, personalitySettings, {})
+      } else if (selectedModel === 'gpt-4-turbo') {
+        result = await apiService.sendOpenAIMessage(messageToSend, personalitySettings, {})
+      } else {
+        // BERT models
+        result = await apiService.sendBERTMessage(messageToSend, personalitySettings, {}, selectedModel)
+      }
+
+      if (result && result.success) {
+        const responseText = result.data?.response || result.data?.text || "Sorry, I couldn't process that."
+        
+        const botMessage = {
+          id: Date.now() + 1,
+          text: responseText,
+          sender: "bot",
+          timestamp: new Date(),
+          model: result.data?.model || selectedModel,
+        }
+
+        setMessages((prev) => [...prev, botMessage])
+      } else {
+        throw new Error(result?.error || "Failed to get response")
+      }
+    } catch (error) {
+      console.error("Bot API Error:", error)
+      Alert.alert("Error", error.message || "Failed to get response from bot")
+      
+      // Add error message to chat
+      const errorMessage = {
         id: Date.now() + 1,
-        text: data.text || data.response || "Sorry, I couldn't process that.",
+        text: "Sorry, I'm having trouble responding right now. Please try again.",
         sender: "bot",
         timestamp: new Date(),
       }
-
-      setMessages((prev) => [...prev, botMessage])
-    } catch (error) {
-      Alert.alert("Error", "Failed to get response from bot")
+      setMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
     }

@@ -61,18 +61,18 @@ export const botAPI = {
    * @returns {Promise<object>} Bot response
    */
   sendBERTMessage: async (message, personality, config, token, model = 'bert-base-uncased') => {
-    try {
-      // Map BERT models to working HuggingFace models
-      const modelMapping = {
-        'bert-base-uncased': 'google/flan-t5-base',
-        'bert-large-uncased': 'microsoft/DialoGPT-medium',
-        'bert-base-cased': 'google/flan-t5-base',
-        'bert-large-cased': 'microsoft/DialoGPT-large',
-        'distilbert-base-uncased': 'distilgpt2'
-      };
+    // Map BERT models to working HuggingFace models
+    const modelMapping = {
+      'bert-base-uncased': 'google/flan-t5-base',
+      'bert-large-uncased': 'microsoft/DialoGPT-medium',
+      'bert-base-cased': 'google/flan-t5-base',
+      'bert-large-cased': 'microsoft/DialoGPT-large',
+      'distilbert-base-uncased': 'distilgpt2'
+    };
 
-      const effectiveModel = modelMapping[model] || 'microsoft/DialoGPT-medium';
-      
+    const effectiveModel = modelMapping[model] || 'microsoft/DialoGPT-medium';
+
+    try {
       // Try backend first
       const backendResponse = await callApi("/bot/bert", "POST", { 
         message, 
