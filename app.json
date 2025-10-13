@@ -1,15 +1,43 @@
 {
   "expo": {
+    "name": "MultiBot Platform",
+    "slug": "multibot-platform",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#667eea"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "extra": {
       "eas": {
         "projectId": "7b187c82-c61e-4b4a-bb70-9a6a1c761917"
       }
     },
     "android": {
-      "package": "com.azhar512.tempappworking"
+      "package": "com.azhar512.multibotplatform",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#667eea"
+      },
+      "permissions": [
+        "INTERNET",
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "ios": {
-      "bundleIdentifier": "com.azhar512.tempappworking",
+      "bundleIdentifier": "com.azhar512.multibotplatform",
+      "buildNumber": "1.0.0",
+      "supportsTablet": true,
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,
