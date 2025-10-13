@@ -226,7 +226,7 @@ function DashboardScreen({ navigation }) {
 
   if (loading) {
     return (
-      <GradientView colors={["#FF8A9B", "#FF9A9A"]} style={styles.container}>
+      <GradientView colors={[THEME.primary, THEME.secondary]} style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={THEME.text} />
           <Text style={styles.loadingText}>Loading dashboard...</Text>
@@ -237,7 +237,7 @@ function DashboardScreen({ navigation }) {
 
   if (error) {
     return (
-      <GradientView colors={["#FF8A9B", "#FF9A9A"]} style={styles.container}>
+      <GradientView colors={[THEME.primary, THEME.secondary]} style={styles.container}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Error: {error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={fetchDashboardData}>
@@ -250,8 +250,8 @@ function DashboardScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#FF8A9B" />
-      <GradientView colors={["#FF8A9B", "#FF9A9A"]} style={styles.backgroundGradient}>
+      <StatusBar barStyle="light-content" backgroundColor={THEME.primary} />
+      <GradientView colors={[THEME.primary, THEME.secondary]} style={styles.backgroundGradient}>
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {renderHeader()}
           {renderStats()}
