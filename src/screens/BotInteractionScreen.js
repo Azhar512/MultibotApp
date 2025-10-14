@@ -34,6 +34,9 @@ const AVAILABLE_MODELS = [
   { label: "DeepSeek R1", value: "deepseek-r1" },
   { label: "BERT Base Uncased", value: "bert-base-uncased" },
   { label: "BERT Large Uncased", value: "bert-large-uncased" },
+  { label: "BERT Base Cased", value: "bert-base-cased" },
+  { label: "BERT Large Cased", value: "bert-large-cased" },
+  { label: "DistilBERT Base Uncased", value: "distilbert-base-uncased" },
   { label: "GPT-4 Turbo", value: "gpt-4-turbo" },
 ]
 
