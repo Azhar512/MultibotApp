@@ -94,15 +94,24 @@ const BotInteractionScreen = ({ navigation }) => {
         result = await apiService.sendBERTMessage(messageToSend, personalitySettings, {}, selectedModel)
       }
 
-      if (result && result.success) {
-        const responseText = result.data?.response || result.data?.text || "Sorry, I couldn't process that."
+      // Handle different response formats from different APIs
+      if (result && (result.success !== false)) {
+        // Extract response text from various possible formats
+        const responseText = 
+          result.data?.botResponse || 
+          result.data?.response || 
+          result.data?.text || 
+          result.botResponse || 
+          result.response || 
+          result.text || 
+          "Sorry, I couldn't process that."
         
         const botMessage = {
           id: Date.now() + 1,
           text: responseText,
           sender: "bot",
           timestamp: new Date(),
-          model: result.data?.model || selectedModel,
+          model: result.data?.model || result.model || selectedModel,
         }
 
         setMessages((prev) => [...prev, botMessage])
