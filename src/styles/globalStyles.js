@@ -1,17 +1,24 @@
 import { StyleSheet } from "react-native"
 
-// Updated theme to match the exact pink/coral gradient from your first image
+// Theme matching your screenshots exactly
 export const THEME = {
-  // Main gradient colors from your first image - Pink/Coral gradient
-  primary: "#FF8A9B", // Pink/Coral from your image
-  secondary: "#FF9A9A", // Lighter coral
-  accent1: "#8B5FBF", // Purple for icons
-  accent2: "#FF4757", // Red/Coral
-  accent3: "#10B981", // Green for positive changes
-
-  // Background gradients - Pink/Coral like your first image
-  background: ["#FF8A9B", "#FF9A9A"], // Pink to coral gradient
-  cardBg: "rgba(255, 255, 255, 0.15)", // Semi-transparent cards
+  // Auth screen - Blue gradient (from screenshot 1)
+  authPrimary: "#6B7FED", // Blue from your auth screen
+  authSecondary: "#7B8FFF", // Lighter blue
+  
+  // Dashboard and main app - Pink/Coral gradient (from screenshots 2-6)
+  primary: "#FF8A9B", // Pink/Coral from your dashboard
+  secondary: "#FFB4C1", // Lighter pink
+  
+  // Accent colors
+  accent1: "#5B6FED", // Blue for buttons
+  accent2: "#FF7B9B", // Pink/coral accent
+  accent3: "#10B981", // Green for positive stats
+  
+  // Background gradients
+  authBackground: ["#6B7FED", "#7B8FFF"], // Blue gradient for auth
+  background: ["#FF8A9B", "#FFB4C1"], // Pink gradient for main app
+  cardBg: "rgba(255, 255, 255, 0.2)", // White cards with transparency
 
   // Text colors
   text: "#ffffff",

@@ -13,10 +13,11 @@ import {
 } from "react-native"
 import { useAuth } from "../context/AuthContext"
 import { validateLoginForm, validateRegistrationForm } from "../utils/validation"
-import { getAccessibilityProps } from "../utils/accessibility"
+import { THEME } from "../styles/globalStyles"
+import GradientView from "../components/GradientView"
 
 const AuthScreen = () => {
-  const [isLogin, setIsLogin] = useState(true)
+  const [isLogin, setIsLogin] = useState(false) // Start with register (matching screenshot)
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -24,8 +25,6 @@ const AuthScreen = () => {
     confirmPassword: "",
   })
   const { login, register, isLoading } = useAuth()
-
-  console.log("🔍 AuthScreen rendered, isLogin:", isLogin)
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -81,17 +80,27 @@ const AuthScreen = () => {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <View style={styles.content}>
-          <Text style={styles.title}>{isLogin ? "Welcome Back" : "Create Account"}</Text>
-          <Text style={styles.subtitle}>{isLogin ? "Sign in to your account" : "Join us today"}</Text>
+    <GradientView colors={THEME.authBackground} style={styles.container}>
+      <KeyboardAvoidingView 
+        style={styles.keyboardView} 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent} 
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Top text */}
+          <Text style={styles.topText}>Join us today</Text>
 
-          <View style={styles.form}>
+          {/* White card */}
+          <View style={styles.card}>
+            {/* Form inputs */}
             {!isLogin && (
               <TextInput
                 style={styles.input}
                 placeholder="Full Name"
+                placeholderTextColor="rgba(0,0,0,0.4)"
                 value={formData.name}
                 onChangeText={(value) => handleInputChange("name", value)}
                 autoCapitalize="words"
@@ -102,35 +111,30 @@ const AuthScreen = () => {
             <TextInput
               style={styles.input}
               placeholder="Email"
+              placeholderTextColor="rgba(0,0,0,0.4)"
               value={formData.email}
               onChangeText={(value) => handleInputChange("email", value)}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
               editable={!isLoading}
-              {...getAccessibilityProps('textInput', {
-                accessibilityLabel: 'Email address',
-                accessibilityHint: 'Enter your email address',
-              })}
             />
 
             <TextInput
               style={styles.input}
               placeholder="Password"
+              placeholderTextColor="rgba(0,0,0,0.4)"
               value={formData.password}
               onChangeText={(value) => handleInputChange("password", value)}
               secureTextEntry
               editable={!isLoading}
-              {...getAccessibilityProps('textInput', {
-                accessibilityLabel: 'Password',
-                accessibilityHint: 'Enter your password',
-              })}
             />
 
             {!isLogin && (
               <TextInput
                 style={styles.input}
                 placeholder="Confirm Password"
+                placeholderTextColor="rgba(0,0,0,0.4)"
                 value={formData.confirmPassword}
                 onChangeText={(value) => handleInputChange("confirmPassword", value)}
                 secureTextEntry
@@ -138,125 +142,123 @@ const AuthScreen = () => {
               />
             )}
 
+            {/* Submit button */}
             <TouchableOpacity
               style={[styles.button, isLoading && styles.buttonDisabled]}
               onPress={handleSubmit}
               disabled={isLoading}
-              {...getAccessibilityProps('button', {
-                accessibilityLabel: isLogin ? 'Sign in to your account' : 'Create new account',
-                accessibilityHint: 'Double tap to submit the form',
-              })}
             >
               {isLoading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>{isLogin ? "Sign In" : "Create Account"}</Text>
+                <Text style={styles.buttonText}>
+                  {isLogin ? "Sign In" : "Create Account"}
+                </Text>
               )}
             </TouchableOpacity>
 
-            <View style={styles.switchContainer}>
-              <Text style={styles.switchText}>{isLogin ? "Don't have an account? " : "Already have an account? "}</Text>
+            {/* Toggle link */}
+            <View style={styles.toggleContainer}>
+              <Text style={styles.toggleText}>
+                {isLogin ? "Don't have an account? " : "Already have an account? "}
+              </Text>
               <TouchableOpacity onPress={toggleMode} disabled={isLoading}>
-                <Text style={styles.switchLink}>{isLogin ? "Sign Up" : "Sign In"}</Text>
+                <Text style={styles.toggleLink}>
+                  {isLogin ? "Sign Up" : "Sign In"}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          <Text style={styles.hint}>
-            {isLogin ? "Enter your credentials to continue" : "Create a new account to get started"}
+          {/* Bottom text */}
+          <Text style={styles.bottomText}>
+            Create a new account to get started
           </Text>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </GradientView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#667eea",
+  },
+  keyboardView: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-  },
-  content: {
-    flex: 1,
     justifyContent: "center",
-    padding: 20,
-    minHeight: "100%",
+    paddingHorizontal: 20,
+    paddingVertical: 40,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  subtitle: {
+  topText: {
     fontSize: 16,
-    color: "#fff",
+    color: "#FFFFFF",
     textAlign: "center",
-    marginBottom: 40,
+    marginBottom: 30,
     opacity: 0.9,
   },
-  form: {
-    backgroundColor: "#fff",
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
     padding: 20,
-    borderRadius: 15,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    padding: 15,
-    marginBottom: 15,
-    borderRadius: 10,
+    backgroundColor: "#F5F5F5",
+    borderRadius: 12,
+    padding: 16,
     fontSize: 16,
-    backgroundColor: "#f9f9f9",
+    color: "#000",
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
   },
   button: {
-    backgroundColor: "#667eea",
-    padding: 15,
-    borderRadius: 10,
+    backgroundColor: THEME.accent1,
+    borderRadius: 12,
+    padding: 16,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 8,
+    marginBottom: 16,
   },
   buttonDisabled: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
   buttonText: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
-  switchContainer: {
+  toggleContainer: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20,
   },
-  switchText: {
+  toggleText: {
     color: "#666",
     fontSize: 14,
   },
-  switchLink: {
-    color: "#667eea",
+  toggleLink: {
+    color: THEME.accent1,
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
-  hint: {
-    textAlign: "center",
-    color: "#fff",
-    marginTop: 20,
-    opacity: 0.8,
+  bottomText: {
     fontSize: 14,
+    color: "#FFFFFF",
+    textAlign: "center",
+    marginTop: 30,
+    opacity: 0.8,
   },
 })
 

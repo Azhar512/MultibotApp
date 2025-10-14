@@ -11,32 +11,24 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native"
-import { Picker } from "@react-native-picker/picker"
 import {
   MessageSquare,
   Phone,
   Send,
   Bot,
   User,
+  Menu,
   ChevronLeft,
-  Settings as SettingsIcon,
-  Zap,
+  Minus,
+  Plus,
 } from "lucide-react-native"
 import { THEME } from "../styles/globalStyles"
 import GradientView from "../components/GradientView"
-import CallInterface from "../components/CallInterface"
+import Sidebar from "../components/Sidebar"
 import { useAuth } from "../context/AuthContext"
 import { apiService } from "../services/apiService"
 
 const { width, height } = Dimensions.get("window")
-
-const INDUSTRY_PRESETS = {
-  general: { Empathy: 70, Assertiveness: 60, Humour: 50, Patience: 80, Confidence: 60 },
-  finance: { Empathy: 60, Assertiveness: 80, Humour: 30, Patience: 70, Confidence: 90 },
-  legal: { Empathy: 50, Assertiveness: 90, Humour: 10, Patience: 70, Confidence: 95 },
-  realEstate: { Empathy: 80, Assertiveness: 70, Humour: 60, Patience: 75, Confidence: 80 },
-  insurance: { Empathy: 75, Assertiveness: 75, Humour: 40, Patience: 80, Confidence: 85 },
-}
 
 const AVAILABLE_MODELS = [
   { label: "DeepSeek R1", value: "deepseek-r1" },
@@ -47,25 +39,47 @@ const AVAILABLE_MODELS = [
 
 const BotInteractionScreen = ({ navigation }) => {
   const { token } = useAuth()
+  const [mode, setMode] = useState("chat") // 'chat' or 'call'
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  
+  // Chat states
   const [messages, setMessages] = useState([])
   const [currentMessage, setCurrentMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [selectedModel, setSelectedModel] = useState(AVAILABLE_MODELS[0].value)
-  const [selectedIndustry, setSelectedIndustry] = useState("general")
-  const [personalitySettings, setPersonalitySettings] = useState(INDUSTRY_PRESETS.general)
-  const [mode, setMode] = useState("chat") // 'chat' or 'call'
-  const [showSettings, setShowSettings] = useState(false)
-  const [botConfig, setBotConfig] = useState({
-    enableVoice: false,
-    enableTextToSpeech: false,
+  
+  // Personality states - matching your screenshot
+  const [personalitySettings, setPersonalitySettings] = useState({
+    Empathy: 100,
+    Assertiveness: 60,
+    Humour: 50,
+    Patience: 80,
+    Confidence: 60,
   })
   
   // Call states
-  const [callStatus, setCallStatus] = useState("idle") // 'idle', 'connecting', 'ringing', 'in-progress', 'ended'
-  const [callData, setCallData] = useState(null)
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [callStatus, setCallStatus] = useState("idle")
+  const [showDialpad, setShowDialpad] = useState(true)
   
   const scrollViewRef = useRef(null)
 
+  const navItems = [
+    { icon: MessageSquare, label: "Dashboard", screen: "Dashboard" },
+    { icon: Bot, label: "Bot Interaction", screen: "BotInteraction" },
+    { icon: Phone, label: "Embed Options", screen: "EmbedOptions" },
+    { icon: User, label: "Users", screen: "Users" },
+  ]
+
+  // Adjust personality trait
+  const adjustPersonality = (trait, delta) => {
+    setPersonalitySettings(prev => ({
+      ...prev,
+      [trait]: Math.max(0, Math.min(100, prev[trait] + delta))
+    }))
+  }
+
+  // Send message
   const sendMessage = async () => {
     if (!currentMessage.trim()) return
 
@@ -139,47 +153,30 @@ const BotInteractionScreen = ({ navigation }) => {
     scrollViewRef.current?.scrollToEnd({ animated: true })
   }, [messages])
 
-  const handlePersonalityChange = (trait, value) => {
-    setPersonalitySettings(prev => ({
-      ...prev,
-      [trait]: parseInt(value)
-    }))
+  // Dial pad number input
+  const handleDialpadPress = (digit) => {
+    setPhoneNumber(prev => prev + digit)
   }
 
-  const handleIndustryChange = (industry) => {
-    setSelectedIndustry(industry)
-    setPersonalitySettings(INDUSTRY_PRESETS[industry])
+  // Delete last digit
+  const handleBackspace = () => {
+    setPhoneNumber(prev => prev.slice(0, -1))
   }
 
-  // Call handler functions
-  const handleInitiateCall = async (phoneNumber) => {
-    if (!phoneNumber || !phoneNumber.trim()) {
-      Alert.alert("Error", "Please enter a valid phone number")
+  // Initiate call
+  const handleCall = async () => {
+    if (!phoneNumber.trim()) {
+      Alert.alert("Error", "Please enter a phone number")
       return
     }
 
     try {
       setCallStatus("connecting")
+      const result = await apiService.startCall(phoneNumber, personalitySettings, {})
       
-      const result = await apiService.startCall(
-        phoneNumber,
-        personalitySettings,
-        {
-          model: selectedModel,
-          voiceType: "alloy",
-        }
-      )
-
-      if (result && result.success) {
-        setCallData({
-          to: phoneNumber,
-          from: "Your System",
-          callSid: result.data?.callSid || null,
-          direction: "outgoing",
-        })
+      if (result && result.success !== false) {
         setCallStatus("in-progress")
-        
-        Alert.alert("Success", "Call initiated successfully!")
+        Alert.alert("Success", "Call initiated!")
       } else {
         throw new Error(result?.error || "Failed to initiate call")
       }
@@ -190,31 +187,20 @@ const BotInteractionScreen = ({ navigation }) => {
     }
   }
 
-  const handleAnswerCall = () => {
-    if (callStatus === "ringing") {
-      setCallStatus("in-progress")
-      Alert.alert("Call Answered", "You are now connected")
-    }
-  }
-
+  // End call
   const handleEndCall = async () => {
     try {
       await apiService.endCall()
-      setCallStatus("ended")
-      
-      setTimeout(() => {
-        setCallStatus("idle")
-        setCallData(null)
-      }, 2000)
-      
+      setCallStatus("idle")
+      setPhoneNumber("")
       Alert.alert("Call Ended", "The call has been disconnected")
     } catch (error) {
       console.error("End Call Error:", error)
       setCallStatus("idle")
-      setCallData(null)
     }
   }
 
+  // Render message
   const renderMessage = (message) => {
     const isBot = message.sender === "bot"
     
@@ -230,153 +216,147 @@ const BotInteractionScreen = ({ navigation }) => {
           {isBot ? <Bot size={16} color="white" /> : <User size={16} color="white" />}
         </View>
         <View style={[styles.messageBubble, isBot ? styles.botBubble : styles.userBubble]}>
-          <Text style={[styles.messageText, isBot ? styles.botText : styles.userText]}>
-            {message.text}
-          </Text>
+          <Text style={styles.messageText}>{message.text}</Text>
         </View>
       </View>
     )
   }
 
-  const renderSettingsPanel = () => (
-    <ScrollView style={styles.settingsPanel} contentContainerStyle={styles.settingsPanelContent}>
-      {/* Model Selection - Chat Mode Only */}
-      {mode === "chat" && (
-        <View style={styles.settingCard}>
-          <View style={styles.settingHeader}>
-            <SettingsIcon size={20} color="white" />
-            <Text style={styles.settingTitle}>Model Selection</Text>
-          </View>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={selectedModel}
-              onValueChange={setSelectedModel}
-              style={styles.picker}
-              dropdownIconColor="white"
-            >
-              {AVAILABLE_MODELS.map((model) => (
-                <Picker.Item key={model.value} label={model.label} value={model.value} />
-              ))}
-            </Picker>
-          </View>
-        </View>
-      )}
-
-      {/* Industry Preset */}
-      <View style={styles.settingCard}>
-        <Text style={styles.settingTitle}>Industry Preset</Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedIndustry}
-            onValueChange={handleIndustryChange}
-            style={styles.picker}
-            dropdownIconColor="white"
-          >
-            <Picker.Item label="General" value="general" />
-            <Picker.Item label="Finance" value="finance" />
-            <Picker.Item label="Legal" value="legal" />
-            <Picker.Item label="Real Estate" value="realEstate" />
-            <Picker.Item label="Insurance" value="insurance" />
-          </Picker>
-        </View>
+  // Render personality slider
+  const renderPersonalitySlider = (trait, value) => (
+    <View key={trait} style={styles.sliderContainer}>
+      <View style={styles.sliderHeader}>
+        <Text style={styles.sliderLabel}>{trait}</Text>
+        <Text style={styles.sliderValue}>{value}%</Text>
       </View>
+      <View style={styles.sliderControls}>
+        <TouchableOpacity
+          style={styles.sliderButton}
+          onPress={() => adjustPersonality(trait, -10)}
+        >
+          <Minus size={20} color="white" />
+        </TouchableOpacity>
+        <View style={styles.sliderTrack}>
+          <View style={[styles.sliderFill, { width: `${value}%` }]} />
+        </View>
+        <TouchableOpacity
+          style={styles.sliderButton}
+          onPress={() => adjustPersonality(trait, 10)}
+        >
+          <Plus size={20} color="white" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
 
-      {/* Personality Settings */}
-      <View style={styles.settingCard}>
-        <Text style={styles.settingTitle}>Personality Settings</Text>
-        {Object.entries(personalitySettings).map(([trait, value]) => (
-          <View key={trait} style={styles.sliderContainer}>
-            <View style={styles.sliderHeader}>
-              <Text style={styles.sliderLabel}>{trait}</Text>
-              <Text style={styles.sliderValue}>{value}%</Text>
-            </View>
-            <View style={styles.sliderTrack}>
-              <View style={[styles.sliderFill, { width: `${value}%` }]} />
-              <View style={[styles.sliderThumb, { left: `${value}%` }]} />
-            </View>
-            <TextInput
-              style={styles.hiddenSlider}
-              value={value.toString()}
-              onChangeText={(val) => handlePersonalityChange(trait, val)}
-              keyboardType="numeric"
-            />
-          </View>
+  // Render dial pad
+  const renderDialpad = () => (
+    <View style={styles.dialpad}>
+      <View style={styles.dialpadRow}>
+        {['1', '2', '3'].map(digit => (
+          <TouchableOpacity
+            key={digit}
+            style={styles.dialpadButton}
+            onPress={() => handleDialpadPress(digit)}
+          >
+            <Text style={styles.dialpadText}>{digit}</Text>
+          </TouchableOpacity>
         ))}
       </View>
-
-      {/* Bot Configuration */}
-      <View style={styles.settingCard}>
-        <View style={styles.settingHeader}>
-          <Zap size={20} color="white" />
-          <Text style={styles.settingTitle}>Bot Configuration</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.checkboxRow}
-          onPress={() => setBotConfig(prev => ({ ...prev, enableVoice: !prev.enableVoice }))}
-        >
-          <View style={[styles.checkbox, botConfig.enableVoice && styles.checkboxChecked]}>
-            {botConfig.enableVoice && <Text style={styles.checkmark}>✓</Text>}
-          </View>
-          <Text style={styles.checkboxLabel}>Enable Voice Input</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.checkboxRow}
-          onPress={() => setBotConfig(prev => ({ ...prev, enableTextToSpeech: !prev.enableTextToSpeech }))}
-        >
-          <View style={[styles.checkbox, botConfig.enableTextToSpeech && styles.checkboxChecked]}>
-            {botConfig.enableTextToSpeech && <Text style={styles.checkmark}>✓</Text>}
-          </View>
-          <Text style={styles.checkboxLabel}>Enable Text-to-Speech</Text>
-        </TouchableOpacity>
+      <View style={styles.dialpadRow}>
+        {['4', '5', '6'].map(digit => (
+          <TouchableOpacity
+            key={digit}
+            style={styles.dialpadButton}
+            onPress={() => handleDialpadPress(digit)}
+          >
+            <Text style={styles.dialpadText}>{digit}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
-    </ScrollView>
+      <View style={styles.dialpadRow}>
+        {['7', '8', '9'].map(digit => (
+          <TouchableOpacity
+            key={digit}
+            style={styles.dialpadButton}
+            onPress={() => handleDialpadPress(digit)}
+          >
+            <Text style={styles.dialpadText}>{digit}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <View style={styles.dialpadRow}>
+        {['*', '0', '#'].map(digit => (
+          <TouchableOpacity
+            key={digit}
+            style={styles.dialpadButton}
+            onPress={() => handleDialpadPress(digit)}
+          >
+            <Text style={styles.dialpadText}>{digit}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
   )
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={THEME.primary} />
-      <GradientView colors={[THEME.primary, THEME.secondary]} style={styles.backgroundGradient}>
-        {/* Header */}
+      <StatusBar barStyle="light-content" backgroundColor={THEME.accent1} />
+      
+      {/* Blue header bar */}
+      <View style={styles.headerBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <ChevronLeft size={24} color="white" />
+          <Text style={styles.backText}>Dashboard</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Bot Interaction</Text>
+      </View>
+
+      <GradientView colors={THEME.background} style={styles.backgroundGradient}>
+        {/* Menu and Title */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <ChevronLeft size={24} color="white" />
+          <TouchableOpacity onPress={() => setSidebarOpen(true)} style={styles.menuButton}>
+            <Menu size={24} color="white" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Bot Interaction</Text>
-          <TouchableOpacity onPress={() => setShowSettings(!showSettings)} style={styles.settingsToggle}>
-            <SettingsIcon size={24} color="white" />
-          </TouchableOpacity>
+          <Text style={styles.title}>Bot Interaction</Text>
+          <View style={{ width: 40 }} />
         </View>
 
         {/* Mode Toggle */}
         <View style={styles.modeToggleContainer}>
-          <View style={styles.modeToggle}>
-            <TouchableOpacity
-              style={[styles.modeButton, mode === "chat" && styles.activeModeButton]}
-              onPress={() => setMode("chat")}
-            >
-              <MessageSquare size={18} color="white" />
-              <Text style={styles.modeButtonText}>Chat Mode</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.modeButton, mode === "call" && styles.activeModeButton]}
-              onPress={() => setMode("call")}
-            >
-              <Phone size={18} color="white" />
-              <Text style={styles.modeButtonText}>Call Mode</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={[styles.modeButton, mode === "chat" && styles.activeModeButton]}
+            onPress={() => setMode("chat")}
+          >
+            <MessageSquare size={18} color={mode === "chat" ? THEME.accent2 : "white"} />
+            <Text style={[styles.modeButtonText, mode === "chat" && styles.activeModeText]}>
+              Chat Mode
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.modeButton, mode === "call" && styles.activeModeButton]}
+            onPress={() => setMode("call")}
+          >
+            <Phone size={18} color={mode === "call" ? THEME.accent2 : "white"} />
+            <Text style={[styles.modeButtonText, mode === "call" && styles.activeModeText]}>
+              Call Mode
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Main Content Area - Two Column Layout like Web */}
-        <View style={styles.mainContent}>
-          {/* Settings Panel - Left Side (like web) */}
-          {showSettings && renderSettingsPanel()}
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {mode === "chat" ? (
+            <>
+              {/* Personality Settings */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Personality Settings</Text>
+                {Object.entries(personalitySettings).map(([trait, value]) =>
+                  renderPersonalitySlider(trait, value)
+                )}
+              </View>
 
-          {/* Chat/Call Area - Right Side (like web) */}
-          <View style={styles.interactionArea}>
-            {mode === "chat" ? (
+              {/* Chat Area */}
               <View style={styles.chatContainer}>
-                {/* Chat Messages */}
                 <ScrollView
                   ref={scrollViewRef}
                   style={styles.chatArea}
@@ -384,8 +364,8 @@ const BotInteractionScreen = ({ navigation }) => {
                 >
                   {messages.length === 0 ? (
                     <View style={styles.emptyChat}>
-                      <Bot size={64} color="rgba(255,255,255,0.3)" />
-                      <Text style={styles.emptyText}>Start a conversation with the AI</Text>
+                      <Bot size={48} color="rgba(255,255,255,0.3)" />
+                      <Text style={styles.emptyText}>Start a conversation</Text>
                     </View>
                   ) : (
                     messages.map(renderMessage)
@@ -409,27 +389,75 @@ const BotInteractionScreen = ({ navigation }) => {
                     multiline
                     maxLength={500}
                   />
-                  <TouchableOpacity onPress={sendMessage} style={styles.sendButton} disabled={isLoading || !currentMessage.trim()}>
+                  <TouchableOpacity
+                    onPress={sendMessage}
+                    style={styles.sendButton}
+                    disabled={isLoading || !currentMessage.trim()}
+                  >
                     <Send size={22} color="white" />
                   </TouchableOpacity>
                 </View>
               </View>
-            ) : (
-              /* Call Interface */
-              <View style={styles.callContainer}>
-                <CallInterface
-                  callStatus={callStatus}
-                  callData={callData}
-                  onInitiateCall={handleInitiateCall}
-                  onAnswerCall={handleAnswerCall}
-                  onEndCall={handleEndCall}
-                  personalitySettings={personalitySettings}
-                  disabled={isLoading}
-                />
+            </>
+          ) : (
+            /* Call Mode */
+            <View style={styles.callContainer}>
+              <View style={styles.callHeader}>
+                <Text style={styles.callTitle}>AI Call Assistant</Text>
+                {callStatus !== "idle" && (
+                  <Text style={styles.callStatus}>{callStatus}</Text>
+                )}
               </View>
-            )}
-          </View>
-        </View>
+
+              {/* Phone Input */}
+              <TextInput
+                style={styles.phoneInput}
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+                placeholder="Enter phone number..."
+                placeholderTextColor="rgba(255,255,255,0.5)"
+                keyboardType="phone-pad"
+              />
+
+              {/* Hide/Show Dialpad */}
+              <TouchableOpacity
+                style={styles.dialpadToggle}
+                onPress={() => setShowDialpad(!showDialpad)}
+              >
+                <Text style={styles.dialpadToggleText}>
+                  {showDialpad ? "# Hide Dialpad" : "# Show Dialpad"}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Dialpad */}
+              {showDialpad && renderDialpad()}
+
+              {/* Call Buttons */}
+              <View style={styles.callButtons}>
+                {callStatus === "idle" ? (
+                  <TouchableOpacity style={styles.callButton} onPress={handleCall}>
+                    <Phone size={24} color="white" />
+                    <Text style={styles.callButtonText}>Start Call</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.endCallButton} onPress={handleEndCall}>
+                    <Phone size={24} color="white" />
+                    <Text style={styles.callButtonText}>End Call</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Sidebar */}
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          navItems={navItems}
+          navigation={navigation}
+          currentScreen="BotInteraction"
+        />
       </GradientView>
     </View>
   )
@@ -439,6 +467,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: THEME.accent1,
+    paddingTop: 50,
+    paddingBottom: 12,
+    paddingHorizontal: 15,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  backText: {
+    color: "white",
+    fontSize: 16,
+    marginLeft: 5,
+  },
+  headerTitle: {
+    flex: 1,
+    color: "white",
+    fontSize: 16,
+    textAlign: "center",
+    marginRight: 80,
+  },
   backgroundGradient: {
     flex: 1,
   },
@@ -446,104 +498,61 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingTop: 50,
-    paddingBottom: 15,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.2)",
+    paddingVertical: 15,
   },
-  backButton: {
+  menuButton: {
     padding: 8,
     backgroundColor: "rgba(255,255,255,0.2)",
     borderRadius: 10,
   },
-  settingsToggle: {
-    padding: 8,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderRadius: 10,
-  },
-  headerTitle: {
+  title: {
     fontSize: 20,
     fontWeight: "bold",
     color: "white",
-    flex: 1,
-    textAlign: "center",
   },
   modeToggleContainer: {
-    alignItems: "center",
-    paddingVertical: 15,
-  },
-  modeToggle: {
     flexDirection: "row",
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderRadius: 12,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
   modeButton: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginHorizontal: 2,
-    borderRadius: 10,
-    backgroundColor: "transparent",
+    paddingVertical: 12,
+    marginHorizontal: 5,
+    borderRadius: 25,
+    backgroundColor: "rgba(255,255,255,0.2)",
   },
   activeModeButton: {
     backgroundColor: "white",
   },
   modeButtonText: {
     color: "white",
-    marginLeft: 6,
+    marginLeft: 8,
     fontWeight: "600",
     fontSize: 14,
   },
-  mainContent: {
+  activeModeText: {
+    color: THEME.accent2,
+  },
+  content: {
     flex: 1,
-    flexDirection: "row",
+    paddingHorizontal: 20,
   },
-  settingsPanel: {
-    width: width * 0.35,
-    borderRightWidth: 1,
-    borderRightColor: "rgba(255,255,255,0.2)",
+  section: {
+    marginBottom: 20,
   },
-  settingsPanelContent: {
-    padding: 15,
-  },
-  settingCard: {
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
-  settingHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  settingTitle: {
-    fontSize: 16,
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: "bold",
     color: "white",
-    marginLeft: 8,
-  },
-  pickerContainer: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.3)",
-    overflow: "hidden",
-  },
-  picker: {
-    color: "white",
-    height: 50,
+    marginBottom: 15,
   },
   sliderContainer: {
-    marginBottom: 15,
+    marginBottom: 20,
   },
   sliderHeader: {
     flexDirection: "row",
@@ -553,101 +562,63 @@ const styles = StyleSheet.create({
   sliderLabel: {
     color: "white",
     fontSize: 14,
-    fontWeight: "600",
   },
   sliderValue: {
-    color: "rgba(255,255,255,0.7)",
+    color: "white",
     fontSize: 14,
     fontWeight: "600",
   },
+  sliderControls: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  sliderButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   sliderTrack: {
+    flex: 1,
     height: 8,
     backgroundColor: "rgba(255,255,255,0.2)",
     borderRadius: 4,
-    position: "relative",
+    marginHorizontal: 10,
   },
   sliderFill: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    backgroundColor: THEME.accent1,
-    borderRadius: 4,
-  },
-  sliderThumb: {
-    position: "absolute",
-    top: -4,
-    width: 16,
-    height: 16,
+    height: "100%",
     backgroundColor: "white",
-    borderRadius: 8,
-    marginLeft: -8,
-  },
-  hiddenSlider: {
-    position: "absolute",
-    opacity: 0,
-  },
-  checkboxRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderColor: "rgba(255,255,255,0.5)",
     borderRadius: 4,
-    marginRight: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkboxChecked: {
-    backgroundColor: THEME.accent1,
-    borderColor: THEME.accent1,
-  },
-  checkmark: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  checkboxLabel: {
-    color: "white",
-    fontSize: 14,
-  },
-  interactionArea: {
-    flex: 1,
   },
   chatContainer: {
     flex: 1,
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: "rgba(255,255,255,0.1)",
     borderRadius: 20,
-    margin: 15,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
     overflow: "hidden",
+    marginBottom: 20,
   },
   chatArea: {
     flex: 1,
-    paddingHorizontal: 15,
+    maxHeight: 300,
   },
   chatContent: {
-    paddingVertical: 20,
+    padding: 15,
   },
   emptyChat: {
-    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: height * 0.15,
+    paddingVertical: 40,
   },
   emptyText: {
     color: "rgba(255,255,255,0.6)",
-    fontSize: 16,
-    marginTop: 15,
+    fontSize: 14,
+    marginTop: 10,
   },
   messageContainer: {
     flexDirection: "row",
-    marginBottom: 15,
+    marginBottom: 12,
     alignItems: "flex-end",
   },
   botMessageContainer: {
@@ -658,42 +629,35 @@ const styles = StyleSheet.create({
     flexDirection: "row-reverse",
   },
   messageIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
   },
   botIcon: {
-    backgroundColor: THEME.accent1,
-    marginRight: 10,
+    backgroundColor: "rgba(255,255,255,0.3)",
+    marginRight: 8,
   },
   userIcon: {
-    backgroundColor: THEME.accent2,
-    marginLeft: 10,
+    backgroundColor: "rgba(255,255,255,0.3)",
+    marginLeft: 8,
   },
   messageBubble: {
     maxWidth: "70%",
-    padding: 12,
-    borderRadius: 15,
+    padding: 10,
+    borderRadius: 12,
   },
   botBubble: {
     backgroundColor: "rgba(255,255,255,0.2)",
-    borderBottomLeftRadius: 5,
+    borderBottomLeftRadius: 4,
   },
   userBubble: {
-    backgroundColor: "rgba(255,255,255,0.3)",
-    borderBottomRightRadius: 5,
+    backgroundColor: "rgba(255,255,255,0.25)",
+    borderBottomRightRadius: 4,
   },
   messageText: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: "white",
-  },
-  botText: {
-    color: "white",
-  },
-  userText: {
+    fontSize: 14,
     color: "white",
   },
   loadingContainer: {
@@ -703,49 +667,121 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: "rgba(255,255,255,0.7)",
-    fontStyle: "italic",
     marginLeft: 10,
+    fontSize: 14,
   },
   inputBar: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 15,
-    paddingVertical: 15,
-    backgroundColor: "rgba(255,255,255,0.1)",
+    padding: 12,
+    backgroundColor: "rgba(255,255,255,0.05)",
     borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.2)",
+    borderTopColor: "rgba(255,255,255,0.1)",
   },
   input: {
     flex: 1,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
     color: "white",
-    fontSize: 16,
-    maxHeight: 100,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.3)",
+    fontSize: 14,
+    maxHeight: 80,
   },
   sendButton: {
     marginLeft: 10,
-    backgroundColor: THEME.accent1,
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
   },
   callContainer: {
     flex: 1,
+  },
+  callHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  callTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "white",
+  },
+  callStatus: {
+    fontSize: 14,
+    color: "#FF4757",
+    fontWeight: "600",
+  },
+  phoneInput: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 12,
     padding: 15,
+    color: "white",
+    fontSize: 16,
+    marginBottom: 15,
+  },
+  dialpadToggle: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 12,
+    padding: 15,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  dialpadToggleText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  dialpad: {
+    marginBottom: 20,
+  },
+  dialpadRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 15,
+  },
+  dialpadButton: {
+    width: 70,
+    height: 70,
+    borderRadius: 15,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dialpadText: {
+    color: "white",
+    fontSize: 24,
+    fontWeight: "600",
+  },
+  callButtons: {
+    marginTop: 20,
+  },
+  callButton: {
+    backgroundColor: THEME.accent3,
+    borderRadius: 15,
+    padding: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  endCallButton: {
+    backgroundColor: "#FF4757",
+    borderRadius: 15,
+    padding: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  callButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 10,
   },
 })
 
 export default BotInteractionScreen
-
